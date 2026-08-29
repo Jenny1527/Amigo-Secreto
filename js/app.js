@@ -19,70 +19,72 @@ const APP_CONFIG = {
 };
 
 // ─── Lista completa de superhéroes (60, ordenados por fama) ───
+// Cada héroe tiene una breve descripción que se muestra en la página
+// de resultados para dar contexto sobre el alter ego elegido.
 const HEROES = [
   // ══════════════════ MARVEL (35) ══════════════════
-  { id: 'spider-man', name: 'Spider-Man', emoji: '🕷️', universe: 'Marvel', color: '#e23636' },
-  { id: 'iron-man', name: 'Iron Man', emoji: '🤖', universe: 'Marvel', color: '#b5121b' },
-  { id: 'capitan-america', name: 'Capitán América', emoji: '🛡️', universe: 'Marvel', color: '#0a4b8f' },
-  { id: 'thor', name: 'Thor', emoji: '⚡', universe: 'Marvel', color: '#0b5ea2' },
-  { id: 'hulk', name: 'Hulk', emoji: '💚', universe: 'Marvel', color: '#3a7d28' },
-  { id: 'wolverine', name: 'Wolverine', emoji: '🐺', universe: 'Marvel', color: '#c8a600' },
-  { id: 'deadpool', name: 'Deadpool', emoji: '💀', universe: 'Marvel', color: '#cc0000' },
-  { id: 'black-panther', name: 'Black Panther', emoji: '🐾', universe: 'Marvel', color: '#2c003e' },
-  { id: 'doctor-strange', name: 'Doctor Strange', emoji: '🔮', universe: 'Marvel', color: '#4a0072' },
-  { id: 'black-widow', name: 'Black Widow', emoji: '🕸️', universe: 'Marvel', color: '#1a1a1a' },
-  { id: 'capitana-marvel', name: 'Capitana Marvel', emoji: '⭐', universe: 'Marvel', color: '#c02b2b' },
-  { id: 'scarlet-witch', name: 'Scarlet Witch', emoji: '🔴', universe: 'Marvel', color: '#8b0000' },
-  { id: 'loki', name: 'Loki', emoji: '🐍', universe: 'Marvel', color: '#1b5e20' },
-  { id: 'ant-man', name: 'Ant-Man', emoji: '🐜', universe: 'Marvel', color: '#8b0000' },
-  { id: 'hawkeye', name: 'Hawkeye', emoji: '🏹', universe: 'Marvel', color: '#4a148c' },
-  { id: 'groot', name: 'Groot', emoji: '🌳', universe: 'Marvel', color: '#5d4037' },
-  { id: 'star-lord', name: 'Star-Lord', emoji: '🎵', universe: 'Marvel', color: '#c62828' },
-  { id: 'gamora', name: 'Gamora', emoji: '⚔️', universe: 'Marvel', color: '#2e7d32' },
-  { id: 'rocket', name: 'Rocket Raccoon', emoji: '🦝', universe: 'Marvel', color: '#6d4c41' },
-  { id: 'vision', name: 'Visión', emoji: '💎', universe: 'Marvel', color: '#7b1fa2' },
-  { id: 'falcon', name: 'Falcon', emoji: '🦅', universe: 'Marvel', color: '#b71c1c' },
-  { id: 'war-machine', name: 'War Machine', emoji: '💣', universe: 'Marvel', color: '#37474f' },
-  { id: 'silver-surfer', name: 'Silver Surfer', emoji: '🏄', universe: 'Marvel', color: '#78909c' },
-  { id: 'daredevil', name: 'Daredevil', emoji: '😈', universe: 'Marvel', color: '#b71c1c' },
-  { id: 'punisher', name: 'Punisher', emoji: '💀', universe: 'Marvel', color: '#212121' },
-  { id: 'moon-knight', name: 'Moon Knight', emoji: '🌙', universe: 'Marvel', color: '#eceff1' },
-  { id: 'she-hulk', name: 'She-Hulk', emoji: '💪', universe: 'Marvel', color: '#388e3c' },
-  { id: 'ms-marvel', name: 'Ms. Marvel', emoji: '💫', universe: 'Marvel', color: '#1565c0' },
-  { id: 'shang-chi', name: 'Shang-Chi', emoji: '🥋', universe: 'Marvel', color: '#d32f2f' },
-  { id: 'blade', name: 'Blade', emoji: '🗡️', universe: 'Marvel', color: '#1a1a1a' },
-  { id: 'storm', name: 'Storm', emoji: '⛈️', universe: 'Marvel', color: '#0d47a1' },
-  { id: 'cyclops', name: 'Cyclops', emoji: '👁️', universe: 'Marvel', color: '#c62828' },
-  { id: 'jean-grey', name: 'Jean Grey', emoji: '🔥', universe: 'Marvel', color: '#e65100' },
-  { id: 'drax', name: 'Drax', emoji: '🗡️', universe: 'Marvel', color: '#546e7a' },
-  { id: 'nebula', name: 'Nebula', emoji: '🌌', universe: 'Marvel', color: '#4527a0' },
+  { id: 'spider-man', name: 'Spider-Man', emoji: '🕷️', universe: 'Marvel', color: '#e23636', desc: 'El trepamuros de Nueva York: ágil, ingenioso y con sentido arácnido. "Un gran poder conlleva una gran responsabilidad".' },
+  { id: 'iron-man', name: 'Iron Man', emoji: '🤖', universe: 'Marvel', color: '#b5121b', desc: 'Tony Stark, genio millonario que construyó una armadura de alta tecnología para convertirse en héroe.' },
+  { id: 'capitan-america', name: 'Capitán América', emoji: '🛡️', universe: 'Marvel', color: '#0a4b8f', desc: 'El primer Vengador: líder leal y valiente, armado con su icónico escudo de vibranium.' },
+  { id: 'thor', name: 'Thor', emoji: '⚡', universe: 'Marvel', color: '#0b5ea2', desc: 'Dios asgardiano del trueno que blande el martillo Mjölnir y controla los rayos.' },
+  { id: 'hulk', name: 'Hulk', emoji: '💚', universe: 'Marvel', color: '#3a7d28', desc: 'El científico Bruce Banner que, al enfurecer, se transforma en un gigante verde de fuerza imparable.' },
+  { id: 'wolverine', name: 'Wolverine', emoji: '🐺', universe: 'Marvel', color: '#c8a600', desc: 'Mutante rudo con garras de adamantium y factor curativo que lo hace prácticamente inmortal.' },
+  { id: 'deadpool', name: 'Deadpool', emoji: '💀', universe: 'Marvel', color: '#cc0000', desc: 'El mercenario bocazas: irreverente, imposible de matar y con un humor muy particular.' },
+  { id: 'black-panther', name: 'Black Panther', emoji: '🐾', universe: 'Marvel', color: '#2c003e', desc: 'T\'Challa, rey de Wakanda, protector de su nación con un traje de vibranium.' },
+  { id: 'doctor-strange', name: 'Doctor Strange', emoji: '🔮', universe: 'Marvel', color: '#4a0072', desc: 'El Hechicero Supremo: maestro de las artes místicas y guardián de la realidad.' },
+  { id: 'black-widow', name: 'Black Widow', emoji: '🕸️', universe: 'Marvel', color: '#1a1a1a', desc: 'Natasha Romanoff, espía y agente letal, experta en combate y sigilo.' },
+  { id: 'capitana-marvel', name: 'Capitana Marvel', emoji: '⭐', universe: 'Marvel', color: '#c02b2b', desc: 'Carol Danvers, una de las heroínas más poderosas: vuela, dispara energía y resiste casi todo.' },
+  { id: 'scarlet-witch', name: 'Scarlet Witch', emoji: '🔴', universe: 'Marvel', color: '#8b0000', desc: 'Wanda Maximoff, dueña de la magia del caos, capaz de alterar la propia realidad.' },
+  { id: 'loki', name: 'Loki', emoji: '🐍', universe: 'Marvel', color: '#1b5e20', desc: 'El dios del engaño: astuto, encantador y maestro de las ilusiones y las travesuras.' },
+  { id: 'ant-man', name: 'Ant-Man', emoji: '🐜', universe: 'Marvel', color: '#8b0000', desc: 'Scott Lang, que encoge y crece a voluntad y comanda ejércitos de hormigas.' },
+  { id: 'hawkeye', name: 'Hawkeye', emoji: '🏹', universe: 'Marvel', color: '#4a148c', desc: 'Clint Barton, arquero de puntería perfecta que nunca falla un tiro.' },
+  { id: 'groot', name: 'Groot', emoji: '🌳', universe: 'Marvel', color: '#5d4037', desc: 'El entrañable árbol viviente de los Guardianes. "Yo soy Groot".' },
+  { id: 'star-lord', name: 'Star-Lord', emoji: '🎵', universe: 'Marvel', color: '#c62828', desc: 'Peter Quill, líder de los Guardianes de la Galaxia, aventurero con playlist ochentera.' },
+  { id: 'gamora', name: 'Gamora', emoji: '⚔️', universe: 'Marvel', color: '#2e7d32', desc: '"La mujer más letal de la galaxia": guerrera implacable y Guardiana de la Galaxia.' },
+  { id: 'rocket', name: 'Rocket Raccoon', emoji: '🦝', universe: 'Marvel', color: '#6d4c41', desc: 'Mapache genio de las armas y la ingeniería, con actitud y mucho carácter.' },
+  { id: 'vision', name: 'Visión', emoji: '💎', universe: 'Marvel', color: '#7b1fa2', desc: 'Androide sintético con la Gema de la Mente, sabio y capaz de atravesar la materia.' },
+  { id: 'falcon', name: 'Falcon', emoji: '🦅', universe: 'Marvel', color: '#b71c1c', desc: 'Sam Wilson, héroe que vuela con alas mecánicas y hoy porta el escudo del Capitán.' },
+  { id: 'war-machine', name: 'War Machine', emoji: '💣', universe: 'Marvel', color: '#37474f', desc: 'James Rhodes en una armadura de combate cargada de armamento pesado.' },
+  { id: 'silver-surfer', name: 'Silver Surfer', emoji: '🏄', universe: 'Marvel', color: '#78909c', desc: 'Heraldo cósmico que surca el universo sobre su tabla plateada con el Poder Cósmico.' },
+  { id: 'daredevil', name: 'Daredevil', emoji: '😈', universe: 'Marvel', color: '#b71c1c', desc: 'El hombre sin miedo: ciego, pero con sentidos sobrehumanos que protege Hell\'s Kitchen.' },
+  { id: 'punisher', name: 'Punisher', emoji: '💀', universe: 'Marvel', color: '#212121', desc: 'Frank Castle, justiciero implacable que persigue el crimen sin tregua.' },
+  { id: 'moon-knight', name: 'Moon Knight', emoji: '🌙', universe: 'Marvel', color: '#eceff1', desc: 'El caballero de la luna: avatar del dios egipcio Khonshu, misterioso y feroz.' },
+  { id: 'she-hulk', name: 'She-Hulk', emoji: '💪', universe: 'Marvel', color: '#388e3c', desc: 'Jennifer Walters, abogada que conserva su mente al transformarse en una poderosa gigante verde.' },
+  { id: 'ms-marvel', name: 'Ms. Marvel', emoji: '💫', universe: 'Marvel', color: '#1565c0', desc: 'Kamala Khan, joven heroína capaz de estirar y agrandar su cuerpo con energía.' },
+  { id: 'shang-chi', name: 'Shang-Chi', emoji: '🥋', universe: 'Marvel', color: '#d32f2f', desc: 'El maestro del kung-fu: artista marcial supremo portador de los Diez Anillos.' },
+  { id: 'blade', name: 'Blade', emoji: '🗡️', universe: 'Marvel', color: '#1a1a1a', desc: 'El cazador de vampiros: mitad humano, mitad vampiro, con la fuerza de ambos.' },
+  { id: 'storm', name: 'Storm', emoji: '⛈️', universe: 'Marvel', color: '#0d47a1', desc: 'Ororo Munroe, mutante que controla el clima: rayos, viento y tormentas.' },
+  { id: 'cyclops', name: 'Cyclops', emoji: '👁️', universe: 'Marvel', color: '#c62828', desc: 'Líder de los X-Men que dispara potentes rayos ópticos de energía.' },
+  { id: 'jean-grey', name: 'Jean Grey', emoji: '🔥', universe: 'Marvel', color: '#e65100', desc: 'Poderosa telépata y telequinética, portadora de la fuerza cósmica Fénix.' },
+  { id: 'drax', name: 'Drax', emoji: '🗡️', universe: 'Marvel', color: '#546e7a', desc: 'Drax el Destructor: guerrero literal y de gran fuerza, Guardián de la Galaxia.' },
+  { id: 'nebula', name: 'Nebula', emoji: '🌌', universe: 'Marvel', color: '#4527a0', desc: 'Cyborg guerrera y estratega, sobreviviente que se convirtió en heroína.' },
 
   // ══════════════════ DC (25) ══════════════════
-  { id: 'batman', name: 'Batman', emoji: '🦇', universe: 'DC', color: '#1c1c1c' },
-  { id: 'superman', name: 'Superman', emoji: '🦸', universe: 'DC', color: '#0057b8' },
-  { id: 'wonder-woman', name: 'Wonder Woman', emoji: '👸', universe: 'DC', color: '#b8860b' },
-  { id: 'flash', name: 'Flash', emoji: '⚡', universe: 'DC', color: '#dc143c' },
-  { id: 'aquaman', name: 'Aquaman', emoji: '🌊', universe: 'DC', color: '#00796b' },
-  { id: 'green-lantern', name: 'Green Lantern', emoji: '💍', universe: 'DC', color: '#1b5e20' },
-  { id: 'supergirl', name: 'Supergirl', emoji: '💪', universe: 'DC', color: '#1565c0' },
-  { id: 'batgirl', name: 'Batgirl', emoji: '🦇', universe: 'DC', color: '#4a148c' },
-  { id: 'robin', name: 'Robin', emoji: '🐦', universe: 'DC', color: '#d32f2f' },
-  { id: 'green-arrow', name: 'Green Arrow', emoji: '🏹', universe: 'DC', color: '#2e7d32' },
-  { id: 'cyborg', name: 'Cyborg', emoji: '🤖', universe: 'DC', color: '#455a64' },
-  { id: 'shazam', name: 'Shazam', emoji: '⚡', universe: 'DC', color: '#c62828' },
-  { id: 'nightwing', name: 'Nightwing', emoji: '🌙', universe: 'DC', color: '#1a237e' },
-  { id: 'harley-quinn', name: 'Harley Quinn', emoji: '🃏', universe: 'DC', color: '#e91e63' },
-  { id: 'catwoman', name: 'Catwoman', emoji: '🐱', universe: 'DC', color: '#212121' },
-  { id: 'hawkgirl', name: 'Hawkgirl', emoji: '🦅', universe: 'DC', color: '#bf360c' },
-  { id: 'martian-manhunter', name: 'Martian Manhunter', emoji: '👽', universe: 'DC', color: '#1b5e20' },
-  { id: 'zatanna', name: 'Zatanna', emoji: '🎩', universe: 'DC', color: '#311b92' },
-  { id: 'blue-beetle', name: 'Blue Beetle', emoji: '🪲', universe: 'DC', color: '#0d47a1' },
-  { id: 'black-canary', name: 'Black Canary', emoji: '🎤', universe: 'DC', color: '#1a1a1a' },
-  { id: 'raven', name: 'Raven', emoji: '🌑', universe: 'DC', color: '#311b92' },
-  { id: 'starfire', name: 'Starfire', emoji: '☀️', universe: 'DC', color: '#e65100' },
-  { id: 'beast-boy', name: 'Beast Boy', emoji: '🦎', universe: 'DC', color: '#2e7d32' },
-  { id: 'constantine', name: 'Constantine', emoji: '🔥', universe: 'DC', color: '#795548' },
-  { id: 'booster-gold', name: 'Booster Gold', emoji: '🌟', universe: 'DC', color: '#f9a825' }
+  { id: 'batman', name: 'Batman', emoji: '🦇', universe: 'DC', color: '#1c1c1c', desc: 'El Caballero Oscuro de Gotham: sin superpoderes, pero con intelecto, tecnología y disciplina.' },
+  { id: 'superman', name: 'Superman', emoji: '🦸', universe: 'DC', color: '#0057b8', desc: 'El Hombre de Acero: vuela, tiene super fuerza y visión de calor. El héroe por excelencia.' },
+  { id: 'wonder-woman', name: 'Wonder Woman', emoji: '👸', universe: 'DC', color: '#b8860b', desc: 'Princesa amazona guerrera, con su Lazo de la Verdad y brazaletes indestructibles.' },
+  { id: 'flash', name: 'Flash', emoji: '⚡', universe: 'DC', color: '#dc143c', desc: 'El hombre más rápido del mundo: corre a velocidades imposibles gracias a la Fuerza de la Velocidad.' },
+  { id: 'aquaman', name: 'Aquaman', emoji: '🌊', universe: 'DC', color: '#00796b', desc: 'Rey de Atlantis: nada a gran velocidad y se comunica con la vida marina.' },
+  { id: 'green-lantern', name: 'Green Lantern', emoji: '💍', universe: 'DC', color: '#1b5e20', desc: 'Portador de un anillo de poder que materializa cualquier cosa que imagine con su voluntad.' },
+  { id: 'supergirl', name: 'Supergirl', emoji: '💪', universe: 'DC', color: '#1565c0', desc: 'Kara Zor-El, prima de Superman, con los mismos poderes kryptonianos y gran corazón.' },
+  { id: 'batgirl', name: 'Batgirl', emoji: '🦇', universe: 'DC', color: '#4a148c', desc: 'Barbara Gordon, heroína ágil y brillante que protege Gotham junto a Batman.' },
+  { id: 'robin', name: 'Robin', emoji: '🐦', universe: 'DC', color: '#d32f2f', desc: 'El fiel compañero de Batman: acróbata joven, valiente y en entrenamiento constante.' },
+  { id: 'green-arrow', name: 'Green Arrow', emoji: '🏹', universe: 'DC', color: '#2e7d32', desc: 'Oliver Queen, arquero justiciero con una flecha para cada situación.' },
+  { id: 'cyborg', name: 'Cyborg', emoji: '🤖', universe: 'DC', color: '#455a64', desc: 'Victor Stone, mitad humano mitad máquina, conectado a toda la tecnología.' },
+  { id: 'shazam', name: 'Shazam', emoji: '⚡', universe: 'DC', color: '#c62828', desc: 'Un niño que al gritar "¡SHAZAM!" se convierte en un héroe adulto con el poder de seis dioses.' },
+  { id: 'nightwing', name: 'Nightwing', emoji: '🌙', universe: 'DC', color: '#1a237e', desc: 'El primer Robin ya crecido: acróbata y líder nato que protege Blüdhaven.' },
+  { id: 'harley-quinn', name: 'Harley Quinn', emoji: '🃏', universe: 'DC', color: '#e91e63', desc: 'Ex psiquiatra convertida en antiheroína impredecible, divertida y llena de energía.' },
+  { id: 'catwoman', name: 'Catwoman', emoji: '🐱', universe: 'DC', color: '#212121', desc: 'Selina Kyle, ladrona felina, ágil y astuta, con debilidad por Batman.' },
+  { id: 'hawkgirl', name: 'Hawkgirl', emoji: '🦅', universe: 'DC', color: '#bf360c', desc: 'Guerrera alada con maza de metal Nth que vuela y combate sin miedo.' },
+  { id: 'martian-manhunter', name: 'Martian Manhunter', emoji: '👽', universe: 'DC', color: '#1b5e20', desc: 'El último marciano: telépata, cambiaformas y uno de los seres más poderosos de la Liga.' },
+  { id: 'zatanna', name: 'Zatanna', emoji: '🎩', universe: 'DC', color: '#311b92', desc: 'Maga y hechicera que lanza conjuros pronunciando las palabras al revés.' },
+  { id: 'blue-beetle', name: 'Blue Beetle', emoji: '🪲', universe: 'DC', color: '#0d47a1', desc: 'Jaime Reyes, unido a un escarabajo alienígena que le da una armadura biotecnológica.' },
+  { id: 'black-canary', name: 'Black Canary', emoji: '🎤', universe: 'DC', color: '#1a1a1a', desc: 'Heroína experta en combate cuerpo a cuerpo con un grito sónico devastador.' },
+  { id: 'raven', name: 'Raven', emoji: '🌑', universe: 'DC', color: '#311b92', desc: 'Hechicera empática de los Jóvenes Titanes, con poderes oscuros que controla con calma.' },
+  { id: 'starfire', name: 'Starfire', emoji: '☀️', universe: 'DC', color: '#e65100', desc: 'Princesa alienígena de Tamaran: vuela y lanza rayos de energía estelar.' },
+  { id: 'beast-boy', name: 'Beast Boy', emoji: '🦎', universe: 'DC', color: '#2e7d32', desc: 'Joven Titán que se transforma en cualquier animal. Divertido y de piel verde.' },
+  { id: 'constantine', name: 'Constantine', emoji: '🔥', universe: 'DC', color: '#795548', desc: 'Detective de lo oculto: mago cínico que enfrenta demonios con astucia.' },
+  { id: 'booster-gold', name: 'Booster Gold', emoji: '🌟', universe: 'DC', color: '#f9a825', desc: 'Héroe del futuro con tecnología avanzada y ganas de fama... con buen corazón.' }
 ];
 
 // No se usa lista predefinida — el cargo es texto libre
@@ -224,7 +226,7 @@ function participantToRow(p) {
     endulzada: sanitizeInput(p.endulzada, 20),
     endulzada_otros: sanitizeInput(p.endulzadaOtros || '', 200),
     alergias: sanitizeInput(p.alergias || '', 200),
-    costume: !!p.costume
+    pin: (p.pin || '').replace(/\D/g, '').slice(0, 4)
   };
 }
 
@@ -321,14 +323,16 @@ async function addParticipant(participant) {
 
   if (supabaseEnabled()) {
     const row = participantToRow(participant);
+    // return=minimal: NO pedimos que la BD nos devuelva la fila insertada.
+    // Así 'anon' no necesita permiso de lectura sobre participants y el PIN
+    // (y demás datos) nunca quedan expuestos por la API.
     const res = await fetch(sbUrl('participants'), {
       method: 'POST',
-      headers: sbHeaders({ 'Prefer': 'return=representation' }),
+      headers: sbHeaders({ 'Prefer': 'return=minimal' }),
       body: JSON.stringify(row)
     });
-    if (res.status === 201) {
-      const rows = await res.json();
-      return rowToParticipant(rows[0]);
+    if (res.status === 201 || res.status === 200 || res.status === 204) {
+      return { ok: true };
     }
     let body = {};
     try { body = await res.json(); } catch (e) {}
@@ -380,7 +384,11 @@ async function resetAll(password) {
       headers: sbHeaders(),
       body: JSON.stringify({ pwd: password })
     });
-    if (!res.ok) throw dataError('NETWORK', 'No se pudo reiniciar.');
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const detail = (body && (body.message || body.details || body.hint)) || '';
+      throw dataError('NETWORK', 'No se pudo reiniciar' + (detail ? ': ' + detail : ` (HTTP ${res.status}).`));
+    }
     return;
   }
   localSaveParticipants([]);
@@ -388,16 +396,85 @@ async function resetAll(password) {
 }
 
 // ─── Sorteo ───
-async function getDrawResults() {
+
+/**
+ * ¿Ya se realizó el sorteo? (público, NO expone ningún dato).
+ * Usa la RPC public_draw_done que solo devuelve true/false.
+ */
+async function isDrawDone() {
   if (supabaseEnabled()) {
-    const res = await fetch(sbUrl('draw_results?id=eq.1&select=*'), { headers: sbHeaders() });
+    const res = await fetch(sbRpcUrl('public_draw_done'), {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: '{}'
+    });
     if (!res.ok) throw dataError('NETWORK', 'No se pudo consultar el sorteo.');
-    const rows = await res.json();
-    if (!rows.length) return null;
-    return { results: rows[0].results, drawnAt: rows[0].drawn_at };
+    return await res.json() === true;
   }
-  const data = localStorage.getItem(APP_CONFIG.DRAW_KEY);
-  return data ? JSON.parse(data) : null;
+  return !!localStorage.getItem(APP_CONFIG.DRAW_KEY);
+}
+
+/**
+ * Consulta AUTENTICADA del resultado propio: celular + PIN.
+ * El servidor (RPC get_my_result) valida el PIN y devuelve SOLO la
+ * asignación de esa persona. Nadie puede ver los datos de los demás.
+ * Devuelve el objeto de asignación, o null si no hay sorteo aún.
+ * Lanza error con code 'BAD_AUTH' si el celular/PIN no coinciden.
+ */
+async function getMyResult(celular, pin) {
+  const cleanCelular = (celular || '').replace(/\D/g, '');
+  const cleanPin = (pin || '').replace(/\D/g, '');
+
+  if (supabaseEnabled()) {
+    const res = await fetch(sbRpcUrl('get_my_result'), {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify({ p_celular: cleanCelular, p_pin: cleanPin })
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const msg = (body && (body.message || body.details || body.hint) || '') + '';
+      if (/NO_DRAW/i.test(msg)) return null;
+      if (/BAD_AUTH/i.test(msg)) throw dataError('BAD_AUTH', 'Celular o PIN incorrectos.');
+      throw dataError('NETWORK', 'No se pudo consultar el resultado.');
+    }
+    const data = await res.json();
+    // La RPC devuelve null si no hay sorteo, o el objeto de asignación.
+    if (data === null || data === undefined) return null;
+    return data;
+  }
+
+  // ── Respaldo local (1 navegador) ──
+  const drawRaw = localStorage.getItem(APP_CONFIG.DRAW_KEY);
+  const draw = drawRaw ? JSON.parse(drawRaw) : null;
+  if (!draw) return null;
+  const participant = localGetParticipants().find(
+    p => (p.celular || '').replace(/\D/g, '') === cleanCelular
+  );
+  if (!participant || ((participant.pin || '').replace(/\D/g, '') !== cleanPin)) {
+    throw dataError('BAD_AUTH', 'Celular o PIN incorrectos.');
+  }
+  const assignment = draw.results.find(
+    r => (r.giverCelular || '').replace(/\D/g, '') === cleanCelular
+  );
+  return assignment || null;
+}
+
+// ── ADMIN: Obtener el sorteo completo via RPC (requiere password) ──
+async function getDrawResultsAdmin(password) {
+  if (supabaseEnabled()) {
+    const res = await fetch(sbRpcUrl('admin_get_draw'), {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify({ pwd: password })
+    });
+    if (!res.ok) throw dataError('NETWORK', 'No se pudo consultar el sorteo.');
+    const data = await res.json();
+    if (!data || !data.results) return null;
+    return { results: data.results, drawnAt: data.drawn_at || data.drawnAt };
+  }
+  const local = localStorage.getItem(APP_CONFIG.DRAW_KEY);
+  return local ? JSON.parse(local) : null;
 }
 
 // ── ADMIN: Guardar resultados del sorteo via RPC ──
@@ -619,7 +696,19 @@ function initStarBackground() {
   });
 }
 
+// ─── Visibilidad del panel de administración ───
+// Si window.ADMIN_ENABLED (definido en js/config.js) no es true,
+// se oculta cualquier enlace o tarjeta que apunte a admin.html.
+function applyAdminVisibility() {
+  if (window.ADMIN_ENABLED === true) return;
+  document.querySelectorAll('a[href="admin.html"]').forEach(el => {
+    const li = el.closest('li');
+    (li || el).style.display = 'none';
+  });
+}
+
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
   initStarBackground();
+  applyAdminVisibility();
 });

@@ -8,9 +8,46 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavToggle();
+
+  // El panel solo funciona si se activó manualmente en js/config.js
+  // (window.ADMIN_ENABLED = true). Si no, se bloquea el acceso aunque
+  // alguien escriba la dirección admin.html directamente.
+  if (window.ADMIN_ENABLED !== true) {
+    showAdminDisabled();
+    return;
+  }
+
   setupLogin();
   setupAdminActions();
 });
+
+// Muestra un aviso y oculta el panel cuando el admin está desactivado.
+function showAdminDisabled() {
+  const login = document.getElementById('admin-login-section');
+  const panel = document.getElementById('admin-panel');
+  if (login) login.style.display = 'none';
+  if (panel) panel.style.display = 'none';
+
+  const container = document.querySelector('.page-container');
+  if (!container) return;
+  const box = document.createElement('div');
+  box.className = 'form-section';
+  box.style.maxWidth = '500px';
+  box.style.margin = '0 auto';
+  box.style.textAlign = 'center';
+  box.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-icon">🔒</div>
+      <div class="empty-state-text">
+        El panel de administración está desactivado.<br>
+        Vuelve al <a href="index.html" style="color: var(--comic-gold);">inicio</a>.
+      </div>
+    </div>
+  `;
+  const header = container.querySelector('.page-header');
+  if (header && header.nextSibling) container.insertBefore(box, header.nextSibling);
+  else container.appendChild(box);
+}
 
 function initNavToggle() {
   const toggle = document.getElementById('nav-toggle');
@@ -187,14 +224,17 @@ async function renderParticipantsList() {
         async () => {
           try {
             await removeParticipant(id, adminPassword);
-            // Also clear draw if exists since participants changed
+            // Al cambiar los participantes, el sorteo previo deja de ser válido.
             await clearDrawResults(adminPassword);
-            await renderParticipantsList();
-            await renderDrawResults();
-            showToast('Participante eliminado');
           } catch (e) {
             showToast(e.message || 'No se pudo eliminar', 'error');
+            return;
           }
+          showToast('Participante eliminado');
+          try {
+            await renderParticipantsList();
+            await renderDrawResults();
+          } catch (e) { /* la vista se actualizará al recargar */ }
         }
       );
     });
@@ -213,7 +253,7 @@ function setupAdminActions() {
     let participants, existing;
     try {
       participants = await getParticipantsAdmin(adminPassword);
-      existing = await getDrawResults();
+      existing = await getDrawResultsAdmin(adminPassword);
     } catch (e) {
       showToast('No se pudo conectar con la base de datos', 'error');
       return;
@@ -281,14 +321,20 @@ function setupAdminActions() {
       '⚠️ Reiniciar Todo',
       'Se eliminarán TODOS los participantes y resultados del sorteo. Esta acción NO se puede deshacer. ¿Estás seguro?',
       async () => {
+        // 1) El reinciio en sí. Si esto falla, avisamos con el error real.
         try {
           await resetAll(adminPassword);
-          await renderParticipantsList();
-          await renderDrawResults();
-          showToast('Todos los datos han sido eliminados');
         } catch (e) {
           showToast(e.message || 'No se pudo reiniciar', 'error');
+          return;
         }
+        // 2) El reinicio funcionó. Refrescar la vista es secundario:
+        //    si el refresco falla, NO decimos que el reinicio falló.
+        showToast('Todos los datos han sido eliminados');
+        try {
+          await renderParticipantsList();
+          await renderDrawResults();
+        } catch (e) { /* la vista se actualizará al recargar */ }
       }
     );
   });
@@ -350,7 +396,7 @@ function runDraw() {
 async function renderDrawResults() {
   let drawData;
   try {
-    drawData = await getDrawResults();
+    drawData = await getDrawResultsAdmin(adminPassword);
   } catch (e) {
     drawData = null;
   }

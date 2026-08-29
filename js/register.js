@@ -7,8 +7,18 @@ document.addEventListener('DOMContentLoaded', () => {
   populateHeroGrid();
   populatePreferences();
   setupFormSubmission();
+  setupPinInput();
   startGridAutoRefresh();
 });
+
+// El PIN solo admite dígitos (máximo 4)
+function setupPinInput() {
+  const pin = document.getElementById('field-pin');
+  if (!pin) return;
+  pin.addEventListener('input', () => {
+    pin.value = pin.value.replace(/\D/g, '').slice(0, 4);
+  });
+}
 
 // Refresca la lista de héroes tomados cada pocos segundos (y al volver a la pestaña),
 // para que se marquen los que otras personas acaban de elegir, sin recargar la página.
@@ -143,8 +153,8 @@ function setupFormSubmission() {
     // Clear all errors
     document.querySelectorAll('.form-group').forEach(g => g.classList.remove('has-error'));
     document.getElementById('error-hero').style.display = 'none';
-    document.getElementById('error-costume').style.display = 'none';
     document.getElementById('error-endulzada').style.display = 'none';
+    document.getElementById('error-privacy').style.display = 'none';
     document.getElementById('error-celular').textContent = 'Ingresa un número de celular válido';
 
     let isValid = true;
@@ -154,6 +164,13 @@ function setupFormSubmission() {
     const cleanCelular = validateCelular(celularRaw);
     if (!cleanCelular || cleanCelular.length < 7 || cleanCelular.length > 15) {
       document.getElementById('group-celular').classList.add('has-error');
+      isValid = false;
+    }
+
+    // Validate PIN (exactamente 4 dígitos)
+    const cleanPin = (document.getElementById('field-pin').value || '').replace(/\D/g, '');
+    if (cleanPin.length !== 4) {
+      document.getElementById('group-pin').classList.add('has-error');
       isValid = false;
     }
 
@@ -200,10 +217,11 @@ function setupFormSubmission() {
       isValid = false;
     }
 
-    // Validate costume radio
-    const costumeRadio = document.querySelector('input[name="costume"]:checked');
-    if (!costumeRadio) {
-      document.getElementById('error-costume').style.display = 'block';
+    // Validate data-treatment authorization (Ley 1581 de 2012 - obligatorio)
+    const privacyChecked = document.getElementById('field-privacy').checked;
+    if (!privacyChecked) {
+      document.getElementById('group-privacy').classList.add('has-error');
+      document.getElementById('error-privacy').style.display = 'block';
       isValid = false;
     }
 
@@ -225,6 +243,7 @@ function setupFormSubmission() {
     // Build participant object
     const participant = {
       celular: cleanCelular,
+      pin: cleanPin,
       name: name,
       cargo: cargo,
       hero: selectedHero,
@@ -233,8 +252,7 @@ function setupFormSubmission() {
       preferences: preferences,
       endulzada: endulzadaRadio.value,
       endulzadaOtros: endulzadaOtros,
-      alergias: sanitizeInput(document.getElementById('field-alergias').value),
-      costume: costumeRadio.value === 'yes'
+      alergias: sanitizeInput(document.getElementById('field-alergias').value)
     };
 
     // Save — la base de datos garantiza que el héroe y el celular no se dupliquen,

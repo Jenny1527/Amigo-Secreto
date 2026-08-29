@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Consulta tu resultado — Amigo Secreto Liga de Superhéroes. Descubre las pistas de tu amigo secreto.">
-  <title>🔍 Mi Resultado — Liga de Superhéroes</title>
+  <meta name="description"
+    content="Consulta tu resultado — Amigo Secreto Liga de Superhéroes. Descubre las pistas de tu amigo secreto.">
+  <title>🔍 Consultar Amigo Secreto — Liga de Superhéroes</title>
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
 </head>
+
 <body>
   <canvas id="star-canvas"></canvas>
 
@@ -17,7 +21,7 @@
     <ul class="nav-links" id="nav-menu">
       <li><a href="index.html">Inicio</a></li>
       <li><a href="register.html">Inscripción</a></li>
-      <li><a href="results.html" class="active">Mi Resultado</a></li>
+      <li><a href="results.html" class="active">Consultar Amigo Secreto</a></li>
       <li><a href="admin.html">Admin</a></li>
     </ul>
   </nav>
@@ -38,22 +42,43 @@
       <!-- Page Header -->
       <div class="page-header">
         <span class="page-header-icon">🔍</span>
-        <h1>CONSULTA TU RESULTADO</h1>
-        <p>Ingresa tu número de celular para descubrir las pistas de tu amigo secreto</p>
+        <h1>CONSULTAR AMIGO SECRETO</h1>
+        <p>Ingresa tu celular y tu PIN para descubrir las pistas de tu amigo secreto</p>
       </div>
 
-      <!-- Search Section -->
-      <div id="search-section">
+      <!-- Search Section (hidden until we confirm the draw was done) -->
+      <div id="search-section" style="display: none;">
         <div class="form-section" style="max-width: 500px; margin: 0 auto;">
-          <h3 class="form-section-title">📱 Tu Número de Celular</h3>
+          <h3 class="form-section-title">🔐 Verifica tu identidad</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Por seguridad, ingresa el <strong>celular</strong> y el <strong>PIN de 4 dígitos</strong> que creaste al
+            inscribirte. Solo tú puedes ver tu amigo secreto. 🕵️
+          </p>
           <div class="form-group" id="group-search-celular">
             <label class="form-label" for="field-search-celular">Celular con el que te inscribiste</label>
-            <input type="tel" class="form-input" id="field-search-celular" placeholder="Ej: 3001234567" maxlength="15" inputmode="tel" autocomplete="tel">
-            <div class="form-error" id="error-search">No encontramos ese celular. Verifica que sea el mismo con el que te inscribiste.</div>
+            <input type="tel" class="form-input" id="field-search-celular" placeholder="Ej: 3001234567" maxlength="15"
+              inputmode="tel" autocomplete="tel">
+          </div>
+          <div class="form-group" id="group-search-pin">
+            <label class="form-label" for="field-search-pin">PIN de 4 dígitos</label>
+            <input type="password" class="form-input" id="field-search-pin" placeholder="••••" maxlength="4"
+              inputmode="numeric" autocomplete="off">
+            <div class="form-error" id="error-search">Celular o PIN incorrectos. Verifica los datos con los que te
+              inscribiste.</div>
           </div>
           <button class="btn btn-gold btn-block" id="btn-search" style="margin-top: 1rem;">
             🔮 REVELAR MI AMIGO SECRETO
           </button>
+        </div>
+      </div>
+
+      <!-- Loading (while we check if the draw is done) -->
+      <div id="loading-section">
+        <div class="form-section" style="max-width: 500px; margin: 0 auto; text-align: center;">
+          <div class="empty-state">
+            <div class="empty-state-icon">⏳</div>
+            <div class="empty-state-text">Consultando el estado del sorteo…</div>
+          </div>
         </div>
       </div>
 
@@ -85,4 +110,5 @@
   <script src="js/app.js"></script>
   <script src="js/results.js"></script>
 </body>
+
 </html>

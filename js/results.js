@@ -4,7 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavToggle();
-  setupSearch();
+  checkDrawAndInit();
 });
 
 function initNavToggle() {
@@ -13,65 +13,110 @@ function initNavToggle() {
   toggle.addEventListener('click', () => menu.classList.toggle('show'));
 }
 
+// Al cargar la página decidimos qué mostrar:
+//   - Si el sorteo NO se ha realizado → pantalla de "aún no hay sorteo".
+//   - Si ya se realizó → formulario de verificación (celular + PIN).
+async function checkDrawAndInit() {
+  const loading = document.getElementById('loading-section');
+  const search = document.getElementById('search-section');
+  const noDraw = document.getElementById('no-draw-section');
+
+  let done;
+  try {
+    done = await isDrawDone();
+  } catch (e) {
+    // Si no se puede consultar, dejamos que intente con el formulario.
+    loading.style.display = 'none';
+    search.style.display = 'block';
+    setupSearch();
+    showToast('No se pudo verificar el estado del sorteo. Intenta consultar directamente.', 'error');
+    return;
+  }
+
+  loading.style.display = 'none';
+
+  if (!done) {
+    noDraw.style.display = 'block';
+    return;
+  }
+
+  search.style.display = 'block';
+  setupSearch();
+}
+
 function setupSearch() {
   const btnSearch = document.getElementById('btn-search');
   const celularInput = document.getElementById('field-search-celular');
+  const pinInput = document.getElementById('field-search-pin');
 
   btnSearch.addEventListener('click', () => searchResult());
-  celularInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') searchResult();
+  const onEnter = (e) => { if (e.key === 'Enter') searchResult(); };
+  celularInput.addEventListener('keydown', onEnter);
+  pinInput.addEventListener('keydown', onEnter);
+  // El PIN solo admite dígitos
+  pinInput.addEventListener('input', () => {
+    pinInput.value = pinInput.value.replace(/\D/g, '').slice(0, 4);
   });
 }
 
 async function searchResult() {
   const celular = document.getElementById('field-search-celular').value.trim();
+  const pin = document.getElementById('field-search-pin').value.trim();
   const cleanCelular = validateCelular(celular);
+  const cleanPin = (pin || '').replace(/\D/g, '');
 
   // Clear errors
   document.getElementById('group-search-celular').classList.remove('has-error');
-  document.getElementById('error-search').textContent = 'No encontramos ese celular. Verifica que sea el mismo con el que te inscribiste.';
+  document.getElementById('group-search-pin').classList.remove('has-error');
+  document.getElementById('error-search').textContent = 'Celular o PIN incorrectos. Verifica los datos con los que te inscribiste.';
 
+  let hasError = false;
   if (!cleanCelular || cleanCelular.length < 7) {
     document.getElementById('group-search-celular').classList.add('has-error');
-    document.getElementById('error-search').textContent = 'Ingresa un número de celular válido';
+    hasError = true;
+  }
+  if (cleanPin.length !== 4) {
+    document.getElementById('group-search-pin').classList.add('has-error');
+    hasError = true;
+  }
+  if (hasError) {
+    if (cleanPin.length !== 4) {
+      document.getElementById('error-search').textContent = 'Ingresa tu celular y un PIN de 4 dígitos.';
+    }
     return;
   }
 
-  // Check if draw has been done
   const btn = document.getElementById('btn-search');
   const original = btn.textContent;
   btn.disabled = true;
   btn.textContent = '🔮 Consultando...';
 
-  let drawData;
+  let assignment;
   try {
-    drawData = await getDrawResults();
+    assignment = await getMyResult(cleanCelular, cleanPin);
   } catch (e) {
     btn.disabled = false;
     btn.textContent = original;
-    showToast('No se pudo conectar. Revisa tu conexión e intenta de nuevo.', 'error');
+    if (e.code === 'BAD_AUTH') {
+      document.getElementById('group-search-pin').classList.add('has-error');
+      document.getElementById('error-search').textContent = 'Celular o PIN incorrectos. Verifica los datos con los que te inscribiste.';
+      showToast('Celular o PIN incorrectos', 'error');
+    } else {
+      showToast('No se pudo conectar. Revisa tu conexión e intenta de nuevo.', 'error');
+    }
     return;
   }
   btn.disabled = false;
   btn.textContent = original;
 
-  if (!drawData) {
+  // Sin sorteo (caso borde: se limpió entre la carga y la consulta)
+  if (!assignment) {
     document.getElementById('search-section').style.display = 'none';
     document.getElementById('no-draw-section').style.display = 'block';
     return;
   }
 
-  // Find assignment for this celular
-  const assignment = drawData.results.find(r =>
-    (r.giverCelular || '').replace(/\D/g, '') === cleanCelular
-  );
-
-  if (!assignment) {
-    document.getElementById('group-search-celular').classList.add('has-error');
-    return;
-  }
-
-  // Show result!
+  // ¡Mostrar resultado!
   showResult(assignment);
 }
 
@@ -107,6 +152,13 @@ function showResult(assignment) {
               <p style="color: var(--text-secondary); font-size: 0.9rem;">Tu amigo secreto escogió este superhéroe <strong>solo para mantener el secreto</strong>.<br>El regalo <strong>no tiene que ser de la temática</strong>: guíate por sus opciones y gustos. 🎁</p>
             </div>
           </div>
+
+          ${hero && hero.desc ? `
+          <div class="result-section">
+            <div class="result-section-title">${hero.emoji} Sobre ${escapeHtml(hero.name)}</div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">${escapeHtml(hero.desc)}</p>
+          </div>
+          ` : ''}
 
           <div class="result-section">
             <div class="result-section-title">🎁 Opciones de Regalo</div>
@@ -151,13 +203,6 @@ function showResult(assignment) {
             <div class="result-no-gift" style="${assignment.receiverAlergias ? 'background: rgba(226, 54, 54, 0.12); border-color: rgba(226, 54, 54, 0.4);' : ''}">
               ${assignment.receiverAlergias ? '⚠️ ' + escapeHtml(assignment.receiverAlergias) : 'No reportó alergias 👍'}
             </div>
-          </div>
-
-          <div class="result-section">
-            <div class="result-section-title">👕 ¿Llevará accesorio?</div>
-            <span class="result-costume-badge ${assignment.receiverCostume ? 'yes' : 'no'}">
-              ${assignment.receiverCostume ? '✅ ¡Sí! Irá con un elemento de su héroe' : '❌ No se comprometió'}
-            </span>
           </div>
 
           <div class="result-section">

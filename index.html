@@ -18,7 +18,7 @@
     <ul class="nav-links" id="nav-menu">
       <li><a href="index.html" class="active">Inicio</a></li>
       <li><a href="register.html">Inscripción</a></li>
-      <li><a href="results.html">Mi Resultado</a></li>
+      <li><a href="results.html">Consultar Amigo Secreto</a></li>
       <li><a href="admin.html">Admin</a></li>
     </ul>
   </nav>
@@ -87,8 +87,8 @@
         </a>
         <a href="results.html" class="action-card" id="card-results">
           <span class="action-card-icon">🔍</span>
-          <h2 class="action-card-title">CONSULTA TU RESULTADO</h2>
-          <p class="action-card-desc">Después del sorteo, ingresa tu número de celular para ver las pistas de tu amigo secreto.</p>
+          <h2 class="action-card-title">CONSULTAR AMIGO SECRETO</h2>
+          <p class="action-card-desc">Después del sorteo, ingresa tu celular y tu PIN para ver las pistas de tu amigo secreto.</p>
         </a>
         <a href="admin.html" class="action-card" id="card-admin">
           <span class="action-card-icon">🎯</span>
@@ -168,11 +168,11 @@
       try {
         const count = await getParticipantCount();
         const takenHeroes = await getTakenHeroes();
-        const drawResults = await getDrawResults();
+        const drawDone = await isDrawDone();
 
         document.getElementById('stat-participants').textContent = count;
         document.getElementById('stat-heroes').textContent = HEROES.length - takenHeroes.length;
-        document.getElementById('stat-drawn').textContent = drawResults ? '✅' : '❌';
+        document.getElementById('stat-drawn').textContent = drawDone ? '✅' : '❌';
       } catch (e) {
         // Si la base de datos no responde, dejamos los valores por defecto
         console.error('No se pudieron cargar las estadísticas:', e);
