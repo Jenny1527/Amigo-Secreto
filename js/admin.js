@@ -414,12 +414,22 @@ async function renderDrawResults() {
   document.getElementById('draw-date').textContent =
     `Sorteo realizado el ${date.toLocaleDateString('es-CO')} a las ${date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}`;
 
+  // Build a hero → participant name map for backwards compatibility
+  // (older draws may not have receiverName stored)
+  let heroToName = {};
+  try {
+    const participants = await getParticipantsAdmin(adminPassword);
+    participants.forEach(p => { heroToName[p.hero] = p.name; });
+  } catch (e) { /* proceed without names */ }
+
   const grid = document.getElementById('draw-results-grid');
   grid.innerHTML = '';
 
   drawData.results.forEach(result => {
     const giverHero = getHeroById(result.giverHero);
     const receiverHero = getHeroById(result.receiverHero);
+    // Use stored name first, fallback to hero→name map
+    const receiverRealName = result.receiverName || heroToName[result.receiverHero] || '';
 
     const item = document.createElement('div');
     item.className = 'draw-result-item';
@@ -432,6 +442,7 @@ async function renderDrawResults() {
       <div class="draw-person">
         <div class="draw-person-emoji">${receiverHero ? receiverHero.emoji : '🦸'}</div>
         <div class="draw-person-name">${receiverHero ? receiverHero.name : 'Héroe'}</div>
+        ${receiverRealName ? `<div class="draw-person-real-name">👤 ${escapeHtml(receiverRealName)}</div>` : ''}
       </div>
     `;
     grid.appendChild(item);

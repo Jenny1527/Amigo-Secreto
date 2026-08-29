@@ -208,7 +208,7 @@ function showResult(assignment) {
           <div class="result-section">
             <div class="result-budget">
               <div class="result-budget-amount">${APP_CONFIG.BUDGET}</div>
-              <div class="result-budget-label">Presupuesto máximo del regalo</div>
+              <div class="result-budget-label">Presupuesto mínimo del regalo</div>
             </div>
           </div>
 
