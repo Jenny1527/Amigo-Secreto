@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Formulario de inscripción — Amigo Secreto Liga de Superhéroes. Escoge tu superhéroe y registra tus opciones de regalo.">
+  <title>📝 Inscripción — Liga de Superhéroes</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+</head>
+<body>
+  <canvas id="star-canvas"></canvas>
+
+  <nav class="nav" id="navbar">
+    <a href="index.html" class="nav-brand">🦸 LIGA SECRETA</a>
+    <button class="nav-hamburger" id="nav-toggle" aria-label="Menú">☰</button>
+    <ul class="nav-links" id="nav-menu">
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="register.html" class="active">Inscripción</a></li>
+      <li><a href="results.html">Mi Resultado</a></li>
+      <li><a href="admin.html">Admin</a></li>
+    </ul>
+  </nav>
+
+  <!-- Sello Globalem -->
+  <a class="brand-badge" href="https://globalem.co" target="_blank" rel="noopener" title="Globalem">
+    <img src="img/globalem-logo.png" alt="Globalem">
+    <span class="brand-badge-text">
+      <span class="brand-badge-tag">by</span>
+      <span class="brand-badge-name">Globalem</span>
+    </span>
+  </a>
+
+
+  <div class="main-content">
+    <div class="page-container">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <span class="page-header-icon">📝</span>
+        <h1>INSCRIPCIÓN DE HÉROE</h1>
+        <p>Únete a la liga y escoge tu alter ego. Tus datos estarán protegidos por el escudo del Capitán.</p>
+      </div>
+
+      <!-- Registration Form -->
+      <form id="register-form" class="form-container" novalidate>
+
+        <!-- Section 1: Personal Info -->
+        <div class="form-section">
+          <h3 class="form-section-title">🦸 Datos del Héroe</h3>
+
+          <div class="form-group" id="group-cedula">
+            <label class="form-label" for="field-cedula">Número de cédula <span class="required">*</span></label>
+            <input type="text" class="form-input" id="field-cedula" placeholder="Ej: 1.023.456.789" required maxlength="15" inputmode="numeric">
+            <div class="form-hint">Con este número consultarás tu resultado del sorteo</div>
+            <div class="form-error" id="error-cedula">Ingresa un número de cédula válido</div>
+          </div>
+
+          <div class="form-group" id="group-name">
+            <label class="form-label" for="field-name">Nombre completo <span class="required">*</span></label>
+            <input type="text" class="form-input" id="field-name" placeholder="Ej: Tony Stark" required autocomplete="name">
+            <div class="form-error" id="error-name">Por favor ingresa tu nombre completo</div>
+          </div>
+
+          <div class="form-group" id="group-cargo">
+            <label class="form-label" for="field-cargo">Cargo <span class="required">*</span></label>
+            <input type="text" class="form-input" id="field-cargo" placeholder="Ej: Analista de sistemas, Coordinador de ventas..." required>
+            <div class="form-error" id="error-cargo">Ingresa tu cargo</div>
+          </div>
+        </div>
+
+        <!-- Section 2: Hero Selection -->
+        <div class="form-section">
+          <h3 class="form-section-title">🦸 Escoge tu Superhéroe <span class="required">*</span></h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Los héroes marcados con ✗ ya fueron elegidos por otro compañero.
+          </p>
+          <div class="hero-grid" id="hero-grid">
+            <!-- Populated by JS -->
+          </div>
+          <input type="hidden" id="field-hero" required>
+          <div class="form-error" id="error-hero" style="display: none;">Debes seleccionar un superhéroe</div>
+        </div>
+
+        <!-- Section 3: Gift Options -->
+        <div class="form-section">
+          <h3 class="form-section-title">🎁 Opciones de Regalo</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Escribe 3 opciones de regalo que te gustaría recibir (presupuesto: <strong style="color: var(--comic-gold);">$50.000 COP</strong>).
+            <br>El regalo <strong>no tiene que ser de la temática de superhéroes</strong> — el héroe es solo para mantener el secreto. 😉
+          </p>
+
+          <div class="form-group" id="group-gift1">
+            <label class="form-label" for="field-gift1">🎁 Opción de regalo #1 <span class="required">*</span></label>
+            <input type="text" class="form-input" id="field-gift1" placeholder="Ej: Termo, audífonos, un libro..." required>
+            <div class="form-error" id="error-gift1">Ingresa una opción de regalo</div>
+          </div>
+
+          <div class="form-group" id="group-gift2">
+            <label class="form-label" for="field-gift2">🎁 Opción de regalo #2 <span class="required">*</span></label>
+            <input type="text" class="form-input" id="field-gift2" placeholder="Ej: Audífonos inalámbricos" required>
+            <div class="form-error" id="error-gift2">Ingresa una opción de regalo</div>
+          </div>
+
+          <div class="form-group" id="group-gift3">
+            <label class="form-label" for="field-gift3">🎁 Opción de regalo #3 <span class="required">*</span></label>
+            <input type="text" class="form-input" id="field-gift3" placeholder="Ej: Set de cuidado personal" required>
+            <div class="form-error" id="error-gift3">Ingresa una opción de regalo</div>
+          </div>
+        </div>
+
+        <!-- Section 4: Restrictions -->
+        <div class="form-section">
+          <h3 class="form-section-title">🚫 Restricciones</h3>
+
+          <div class="form-group" id="group-no-gift">
+            <label class="form-label" for="field-no-gift">¿Hay algún regalo que NO te gustaría recibir?</label>
+            <input type="text" class="form-input" id="field-no-gift" placeholder="Ej: Peluches, medias, comida casera...">
+            <div class="form-hint">Opcional — ayuda a tu amigo secreto a evitar sorpresas no deseadas</div>
+          </div>
+        </div>
+
+        <!-- Section 5: Preferences -->
+        <div class="form-section">
+          <h3 class="form-section-title">🍫 Preferencias</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Marca las categorías que más te gustan
+          </p>
+          <div class="prefs-grid" id="prefs-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Section 5b: Endulzada Preference -->
+        <div class="form-section">
+          <h3 class="form-section-title">🍬 Endulzadas <span class="required">*</span></h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Los <strong>dos primeros viernes</strong> son de <strong>endulzada</strong>: tu amigo secreto te dejará un
+            detalle <strong>dulce o salado</strong> en la caja de la cafetería. ¿Qué prefieres recibir?
+          </p>
+          <div class="radio-group" id="group-endulzada">
+            <label class="radio-option">
+              <input type="radio" name="endulzada" value="dulce" required>
+              <span class="radio-visual"></span>
+              <span>Dulce 🍬</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="endulzada" value="salado">
+              <span class="radio-visual"></span>
+              <span>Salado 🥨</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="endulzada" value="ambos">
+              <span class="radio-visual"></span>
+              <span>Ambos me gustan 😋</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="endulzada" value="otros">
+              <span class="radio-visual"></span>
+              <span>Otros ✍️</span>
+            </label>
+          </div>
+          <div class="form-error" id="error-endulzada">Selecciona qué prefieres para la endulzada</div>
+
+          <div class="form-group" id="group-endulzada-otros" style="margin-top: 1rem;">
+            <label class="form-label" for="field-endulzada-otros">Especifica qué dulce o salado te gusta</label>
+            <input type="text" class="form-input" id="field-endulzada-otros" placeholder="Ej: chocolatinas, papas de paquete, galletas, brownie...">
+            <div class="form-hint">Opcional — obligatorio si elegiste "Otros". Ayuda a tu amigo secreto a acertar. 🎯</div>
+            <div class="form-error" id="error-endulzada-otros">Cuéntanos qué dulce o salado prefieres</div>
+          </div>
+
+          <div class="form-group" id="group-alergias" style="margin-top: 1rem;">
+            <label class="form-label" for="field-alergias">¿Eres alérgico/a a algún alimento? 🚑</label>
+            <input type="text" class="form-input" id="field-alergias" placeholder="Ej: maní, lactosa, gluten... o escribe 'Ninguna'">
+            <div class="form-hint">Importante para cuidar tu endulzada. Si no tienes alergias, déjalo vacío o escribe "Ninguna".</div>
+          </div>
+        </div>
+
+        <!-- Section 6: Costume Commitment -->
+        <div class="form-section">
+          <h3 class="form-section-title">👕 Compromiso de Héroe</h3>
+          <div class="form-group" id="group-costume">
+            <label class="form-label">¿Te comprometes a llevar algún elemento relacionado con tu superhéroe el día de la actividad? <span class="required">*</span></label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="costume" value="yes" required>
+                <span class="radio-visual"></span>
+                <span>¡Sí, claro! 🎉</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="costume" value="no">
+                <span class="radio-visual"></span>
+                <span>No puedo 😅</span>
+              </label>
+            </div>
+            <div class="form-error" id="error-costume">Selecciona una opción</div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn btn-gold btn-block" id="btn-submit">
+          ⚡ UNIRME A LA LIGA ⚡
+        </button>
+
+      </form>
+
+      <footer class="footer">
+        <p>🦸 Liga de Superhéroes — Amigo Secreto 2026 ⚡</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/register.js"></script>
+</body>
+</html>

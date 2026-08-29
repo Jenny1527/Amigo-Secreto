@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel de administración — Sorteo del Amigo Secreto Liga de Superhéroes">
+  <title>🎯 Admin — Liga de Superhéroes</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+</head>
+<body>
+  <canvas id="star-canvas"></canvas>
+
+  <nav class="nav" id="navbar">
+    <a href="index.html" class="nav-brand">🦸 LIGA SECRETA</a>
+    <button class="nav-hamburger" id="nav-toggle" aria-label="Menú">☰</button>
+    <ul class="nav-links" id="nav-menu">
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="register.html">Inscripción</a></li>
+      <li><a href="results.html">Mi Resultado</a></li>
+      <li><a href="admin.html" class="active">Admin</a></li>
+    </ul>
+  </nav>
+
+  <!-- Sello Globalem -->
+  <a class="brand-badge" href="https://globalem.co" target="_blank" rel="noopener" title="Globalem">
+    <img src="img/globalem-logo.png" alt="Globalem">
+    <span class="brand-badge-text">
+      <span class="brand-badge-tag">by</span>
+      <span class="brand-badge-name">Globalem</span>
+    </span>
+  </a>
+
+
+  <div class="main-content">
+    <div class="page-container">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <span class="page-header-icon">🎯</span>
+        <h1>PANEL DE CONTROL</h1>
+        <p>Centro de mando de la Liga de Superhéroes</p>
+      </div>
+
+      <!-- Login Gate -->
+      <div id="admin-login-section">
+        <div class="form-section admin-login">
+          <h3 class="form-section-title">🔐 Acceso Restringido</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Ingresa la contraseña de administrador para continuar.
+          </p>
+          <div class="form-group" id="group-password">
+            <label class="form-label" for="field-password">Contraseña</label>
+            <input type="password" class="form-input" id="field-password" placeholder="Contraseña de admin">
+            <div class="form-error" id="error-password">Contraseña incorrecta</div>
+          </div>
+          <button class="btn btn-primary btn-block" id="btn-login" style="margin-top: 1rem;">
+            🔓 Ingresar
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Panel (hidden until login) -->
+      <div id="admin-panel" style="display: none;">
+
+        <!-- Participants Section -->
+        <div class="form-section">
+          <h3 class="form-section-title">👥 Participantes Inscritos (<span id="participant-count">0</span>)</h3>
+
+          <div id="participants-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="admin-actions" id="admin-actions">
+          <button class="btn btn-gold" id="btn-draw" title="Realizar sorteo">
+            🎲 REALIZAR SORTEO
+          </button>
+          <button class="btn btn-outline" id="btn-export" title="Exportar CSV">
+            📊 Exportar CSV
+          </button>
+          <button class="btn btn-danger" id="btn-reset" title="Reiniciar todo">
+            🗑️ Reiniciar Todo
+          </button>
+        </div>
+
+        <!-- Draw Results (if available) -->
+        <div id="draw-results-section" style="display: none;">
+          <div class="form-section">
+            <h3 class="form-section-title">🎯 Resultados del Sorteo</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;" id="draw-date"></p>
+            <div class="draw-results-grid" id="draw-results-grid">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <footer class="footer">
+        <p>🦸 Liga de Superhéroes — Amigo Secreto 2026 ⚡</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

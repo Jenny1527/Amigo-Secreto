@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Consulta tu resultado — Amigo Secreto Liga de Superhéroes. Descubre las pistas de tu amigo secreto.">
+  <title>🔍 Mi Resultado — Liga de Superhéroes</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+</head>
+<body>
+  <canvas id="star-canvas"></canvas>
+
+  <nav class="nav" id="navbar">
+    <a href="index.html" class="nav-brand">🦸 LIGA SECRETA</a>
+    <button class="nav-hamburger" id="nav-toggle" aria-label="Menú">☰</button>
+    <ul class="nav-links" id="nav-menu">
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="register.html">Inscripción</a></li>
+      <li><a href="results.html" class="active">Mi Resultado</a></li>
+      <li><a href="admin.html">Admin</a></li>
+    </ul>
+  </nav>
+
+  <!-- Sello Globalem -->
+  <a class="brand-badge" href="https://globalem.co" target="_blank" rel="noopener" title="Globalem">
+    <img src="img/globalem-logo.png" alt="Globalem">
+    <span class="brand-badge-text">
+      <span class="brand-badge-tag">by</span>
+      <span class="brand-badge-name">Globalem</span>
+    </span>
+  </a>
+
+
+  <div class="main-content">
+    <div class="page-container">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <span class="page-header-icon">🔍</span>
+        <h1>CONSULTA TU RESULTADO</h1>
+        <p>Ingresa tu número de cédula para descubrir las pistas de tu amigo secreto</p>
+      </div>
+
+      <!-- Search Section -->
+      <div id="search-section">
+        <div class="form-section" style="max-width: 500px; margin: 0 auto;">
+          <h3 class="form-section-title">🪪 Tu Número de Cédula</h3>
+          <div class="form-group" id="group-search-cedula">
+            <label class="form-label" for="field-search-cedula">Cédula con la que te inscribiste</label>
+            <input type="text" class="form-input" id="field-search-cedula" placeholder="Ej: 1023456789" maxlength="15" inputmode="numeric">
+            <div class="form-error" id="error-search">No encontramos esa cédula. Verifica que sea la misma con la que te inscribiste.</div>
+          </div>
+          <button class="btn btn-gold btn-block" id="btn-search" style="margin-top: 1rem;">
+            🔮 REVELAR MI AMIGO SECRETO
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Section (hidden) -->
+      <div id="result-section" style="display: none;">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- No Draw Message (hidden) -->
+      <div id="no-draw-section" style="display: none;">
+        <div class="form-section" style="max-width: 500px; margin: 0 auto; text-align: center;">
+          <div class="empty-state">
+            <div class="empty-state-icon">⏳</div>
+            <div class="empty-state-text">
+              El sorteo aún no se ha realizado.<br>
+              Espera a que el administrador lo ejecute. ¡Paciencia, héroe!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="footer">
+        <p>🦸 Liga de Superhéroes — Amigo Secreto 2026 ⚡</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/results.js"></script>
+</body>
+</html>

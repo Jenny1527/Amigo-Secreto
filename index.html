@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Amigo Secreto Liga de Superhéroes — Elige tu héroe, deja tus pistas y nosotros guardamos el secreto. Dinámica de amor y amistad en la oficina.">
+  <title>🦸 Liga de Superhéroes — Amigo Secreto</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦸</text></svg>">
+</head>
+<body>
+  <canvas id="star-canvas"></canvas>
+
+  <!-- Navigation -->
+  <nav class="nav" id="navbar">
+    <a href="index.html" class="nav-brand">🦸 LIGA SECRETA</a>
+    <button class="nav-hamburger" id="nav-toggle" aria-label="Menú">☰</button>
+    <ul class="nav-links" id="nav-menu">
+      <li><a href="index.html" class="active">Inicio</a></li>
+      <li><a href="register.html">Inscripción</a></li>
+      <li><a href="results.html">Mi Resultado</a></li>
+      <li><a href="admin.html">Admin</a></li>
+    </ul>
+  </nav>
+
+  <!-- Sello Globalem -->
+  <a class="brand-badge" href="https://globalem.co" target="_blank" rel="noopener" title="Globalem">
+    <img src="img/globalem-logo.png" alt="Globalem">
+    <span class="brand-badge-text">
+      <span class="brand-badge-tag">by</span>
+      <span class="brand-badge-name">Globalem</span>
+    </span>
+  </a>
+
+
+  <div class="main-content">
+    <div class="page-container">
+
+      <!-- Hero Section -->
+      <section class="hero" id="hero">
+        <div class="hero-badge">
+          <span>⚡</span>
+          <span>AMOR Y AMISTAD 2026</span>
+          <span>⚡</span>
+        </div>
+
+        <h1 class="hero-title">MI SUPERHÉROE SECRETO</h1>
+        <p class="hero-subtitle">LIGA DE SUPERHÉROES 🦸‍♂️🦸‍♀️</p>
+
+        <div class="hero-image-wrapper">
+          <img src="img/hero-banner.jpg" alt="Liga de Superhéroes — Amigo Secreto" id="hero-image">
+        </div>
+
+        <div class="speech-bubble">
+          <em>"Elige tu héroe. Deja tus pistas. Nosotros nos encargamos de guardar el secreto."</em> 🦸‍♂️🎁
+        </div>
+
+        <p class="hero-tagline">
+          Una dinámica épica de <em>amor y amistad</em> donde cada compañero se convierte en un superhéroe. 
+          Escoge tu alter ego, deja pistas de regalo y descubre a quién debes sorprender. 
+          <em>¡El día del intercambio, ven con tu accesorio de héroe!</em>
+        </p>
+      </section>
+
+      <!-- Stats -->
+      <section class="stats-bar" id="stats-bar">
+        <div class="stat-item">
+          <span class="stat-number" id="stat-participants">…</span>
+          <span class="stat-label">Inscritos</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-heroes">…</span>
+          <span class="stat-label">Héroes Disponibles</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-drawn">…</span>
+          <span class="stat-label">Sorteo</span>
+        </div>
+      </section>
+
+      <!-- Action Cards -->
+      <section class="action-cards" id="action-cards">
+        <a href="register.html" class="action-card" id="card-register">
+          <span class="action-card-icon">📝</span>
+          <h2 class="action-card-title">INSCRÍBETE</h2>
+          <p class="action-card-desc">Escoge tu superhéroe favorito, deja 3 opciones de regalo y únete a la liga.</p>
+        </a>
+        <a href="results.html" class="action-card" id="card-results">
+          <span class="action-card-icon">🔍</span>
+          <h2 class="action-card-title">CONSULTA TU RESULTADO</h2>
+          <p class="action-card-desc">Después del sorteo, ingresa tu número de cédula para ver las pistas de tu amigo secreto.</p>
+        </a>
+        <a href="admin.html" class="action-card" id="card-admin">
+          <span class="action-card-icon">🎯</span>
+          <h2 class="action-card-title">PANEL DE ADMINISTRACIÓN</h2>
+          <p class="action-card-desc">Gestiona participantes, realiza el sorteo y exporta los resultados.</p>
+        </a>
+      </section>
+
+      <!-- Budget -->
+      <section class="budget-banner" id="budget-section">
+        <div class="budget-label">💰 Presupuesto por regalo</div>
+        <div class="budget-amount" id="budget-amount">$50.000 COP</div>
+        <div class="budget-label" style="margin-top: 0.5rem;">El regalo no tiene que ser de la temática — el superhéroe es solo para mantener el secreto 🎁</div>
+      </section>
+
+      <!-- How it works -->
+      <section class="form-section" style="animation-delay: 1s;">
+        <h2 class="form-section-title">📋 ¿Cómo funciona?</h2>
+        <div style="display: grid; gap: 1rem;">
+          <div style="display: flex; align-items: flex-start; gap: 1rem;">
+            <span style="font-size: 1.5rem; line-height: 1;">1️⃣</span>
+            <div>
+              <strong style="color: var(--comic-gold);">Inscríbete</strong>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Ingresa tu cédula, nombre y cargo, escoge tu superhéroe, registra 3 opciones de regalo y elige si prefieres <strong>dulce o salado</strong> para las endulzadas. El regalo <strong>no tiene que ser de la temática</strong>.</p>
+            </div>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 1rem;">
+            <span style="font-size: 1.5rem; line-height: 1;">2️⃣</span>
+            <div>
+              <strong style="color: var(--comic-gold);">Espera el sorteo</strong>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">El administrador realizará el sorteo aleatorio una vez todos estén inscritos.</p>
+            </div>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 1rem;">
+            <span style="font-size: 1.5rem; line-height: 1;">3️⃣</span>
+            <div>
+              <strong style="color: var(--comic-gold);">Consulta tu resultado</strong>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Ingresa tu <strong>número de cédula</strong> y verás el superhéroe y las pistas de regalo de tu amigo secreto.</p>
+            </div>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 1rem;">
+            <span style="font-size: 1.5rem; line-height: 1;">4️⃣</span>
+            <div>
+              <strong style="color: var(--comic-gold);">🍬 Las dos endulzadas — Vie. 4 y 11 de sept</strong>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Los <strong>dos primeros viernes</strong> son de endulzada: trae un detalle <strong>dulce o salado</strong> (según lo que prefiera tu amigo secreto) y déjalo en la <strong>caja de la cafetería</strong>. Todo se reparte de forma discreta para no revelar el secreto. 🎁📦</p>
+            </div>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 1rem;">
+            <span style="font-size: 1.5rem; line-height: 1;">5️⃣</span>
+            <div>
+              <strong style="color: var(--comic-gold);">🎁 ¡El gran día! — Vie. 18 de sept, 2:00 p. m.</strong>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">La <strong>entrega de regalos</strong> es el <strong>viernes 18 de septiembre a las 2:00 p. m. en la cafetería</strong>. Compra uno de los regalos sugeridos por tu amigo (sin necesidad de que sea de la temática) ¡y ven con un accesorio de tu héroe! 🦸‍♂️🎉</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <p>🦸 Liga de Superhéroes — Amigo Secreto 2026 ⚡</p>
+        <p style="margin-top: 0.5rem;">Hecho con 💛 para el equipo</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Update stats
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Mobile nav toggle
+      const toggle = document.getElementById('nav-toggle');
+      const menu = document.getElementById('nav-menu');
+      toggle.addEventListener('click', () => {
+        menu.classList.toggle('show');
+      });
+
+      try {
+        const participants = await getParticipants();
+        const takenHeroes = participants.map(p => p.hero);
+        const drawResults = await getDrawResults();
+
+        document.getElementById('stat-participants').textContent = participants.length;
+        document.getElementById('stat-heroes').textContent = HEROES.length - takenHeroes.length;
+        document.getElementById('stat-drawn').textContent = drawResults ? '✅' : '❌';
+      } catch (e) {
+        // Si la base de datos no responde, dejamos los valores por defecto
+        console.error('No se pudieron cargar las estadísticas:', e);
+      }
+    });
+  </script>
+</body>
+</html>
