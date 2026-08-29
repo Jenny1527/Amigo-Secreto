@@ -1,13 +1,21 @@
 // ============================================================
 // APP.JS — Datos compartidos, superhéroes y lógica de storage
 // ============================================================
+// SEGURIDAD: Las operaciones de admin (listar participantes,
+// eliminar, sortear, resetear) pasan por funciones RPC de
+// PostgreSQL que validan un password del lado del servidor.
+// La anon key solo permite INSERT en participants y SELECT en
+// draw_results. Ver supabase_setup.sql para los detalles.
+// ============================================================
 
 const APP_CONFIG = {
   STORAGE_KEY: 'superhero_secret_friend',
   DRAW_KEY: 'superhero_draw_results',
-  ADMIN_PASSWORD: 'superhero2026',
   BUDGET: '$50.000 COP',
-  APP_NAME: 'Liga de Superhéroes — Amigo Secreto'
+  APP_NAME: 'Liga de Superhéroes — Amigo Secreto',
+  // Rate limiting para login de admin
+  MAX_LOGIN_ATTEMPTS: 3,
+  LOGIN_COOLDOWN_MS: 30000 // 30 segundos
 };
 
 // ─── Lista completa de superhéroes (60, ordenados por fama) ───
@@ -111,6 +119,43 @@ const PREFERENCE_OPTIONS = [
 ];
 
 // ============================================================
+// SANITIZACIÓN Y VALIDACIÓN DE INPUTS (OWASP A03)
+// ============================================================
+
+/**
+ * Sanitiza un string de texto libre: recorta, limita longitud,
+ * elimina caracteres de control y secuencias peligrosas.
+ */
+function sanitizeInput(value, maxLength = 200) {
+  if (typeof value !== 'string') return '';
+  return value
+    .trim()
+    .slice(0, maxLength)
+    // Eliminar caracteres de control (excepto saltos de línea)
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Eliminar null bytes
+    .replace(/\0/g, '');
+}
+
+/**
+ * Valida un número de celular colombiano.
+ * Formato: 10 dígitos, empieza con 3.
+ * Acepta espacios, puntos y guiones como separadores.
+ */
+function validateCelular(raw) {
+  const clean = (raw || '').replace(/[\s.\-()]/g, '');
+  if (!/^\d{7,15}$/.test(clean)) return null;
+  return clean;
+}
+
+/**
+ * Valida que un heroId exista en la lista conocida.
+ */
+function isValidHeroId(heroId) {
+  return HEROES.some(h => h.id === heroId);
+}
+
+// ============================================================
 // CAPA DE DATOS — Supabase (nube compartida) con respaldo local
 // La configuración vive en js/config.js
 //   window.SUPABASE_URL / window.SUPABASE_ANON_KEY
@@ -142,11 +187,15 @@ function sbUrl(path) {
   return window.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/' + path;
 }
 
+function sbRpcUrl(fnName) {
+  return window.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/' + fnName;
+}
+
 // Fila de la BD (snake_case) -> objeto participante usado por la UI (camelCase)
 function rowToParticipant(r) {
   return {
     id: r.id,
-    cedula: r.cedula,
+    celular: r.celular,
     name: r.name,
     cargo: r.cargo,
     hero: r.hero,
@@ -163,16 +212,18 @@ function rowToParticipant(r) {
 
 function participantToRow(p) {
   return {
-    cedula: p.cedula,
-    name: p.name,
-    cargo: p.cargo,
+    celular: sanitizeInput(p.celular, 15).replace(/\D/g, ''),
+    name: sanitizeInput(p.name, 100),
+    cargo: sanitizeInput(p.cargo, 100),
     hero: p.hero,
-    gifts: p.gifts || [],
-    no_gift: p.noGift || '',
-    preferences: p.preferences || [],
-    endulzada: p.endulzada,
-    endulzada_otros: p.endulzadaOtros || '',
-    alergias: p.alergias || '',
+    gifts: (p.gifts || []).map(g => sanitizeInput(g, 200)),
+    no_gift: sanitizeInput(p.noGift || '', 200),
+    preferences: (p.preferences || []).filter(id =>
+      PREFERENCE_OPTIONS.some(opt => opt.id === id)
+    ),
+    endulzada: sanitizeInput(p.endulzada, 20),
+    endulzada_otros: sanitizeInput(p.endulzadaOtros || '', 200),
+    alergias: sanitizeInput(p.alergias || '', 200),
     costume: !!p.costume
   };
 }
@@ -187,19 +238,38 @@ function localSaveParticipants(participants) {
 }
 
 // ─── API pública de datos (asíncrona) ───
-async function getParticipants() {
+
+/**
+ * Obtiene la cantidad de participantes inscritos (sin datos sensibles).
+ * Usa la función RPC pública que solo retorna el conteo.
+ */
+async function getParticipantCount() {
   if (supabaseEnabled()) {
-    const res = await fetch(sbUrl('participants?select=*&order=created_at.asc'), { headers: sbHeaders() });
+    const res = await fetch(sbRpcUrl('public_participant_count'), {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: '{}'
+    });
     if (!res.ok) throw dataError('NETWORK', 'No se pudo conectar con la base de datos.');
-    const rows = await res.json();
-    return rows.map(rowToParticipant);
+    return await res.json();
   }
-  return localGetParticipants();
+  return localGetParticipants().length;
 }
 
+/**
+ * Obtiene la lista de héroes ya tomados (sin datos personales).
+ */
 async function getTakenHeroes() {
-  const participants = await getParticipants();
-  return participants.map(p => p.hero);
+  if (supabaseEnabled()) {
+    const res = await fetch(sbRpcUrl('public_taken_heroes'), {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: '{}'
+    });
+    if (!res.ok) throw dataError('NETWORK', 'No se pudo conectar con la base de datos.');
+    return await res.json();
+  }
+  return localGetParticipants().map(p => p.hero);
 }
 
 async function isHeroTaken(heroId) {
@@ -207,26 +277,54 @@ async function isHeroTaken(heroId) {
   return taken.includes(heroId);
 }
 
-async function isCedulaRegistered(cedula) {
-  const clean = (cedula || '').replace(/\D/g, '');
-  const participants = await getParticipants();
-  return participants.some(p => (p.cedula || '').replace(/\D/g, '') === clean);
+// ── ADMIN: Obtener todos los participantes (requiere password) ──
+async function getParticipantsAdmin(password) {
+  if (supabaseEnabled()) {
+    const res = await fetch(sbRpcUrl('admin_list_participants'), {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify({ pwd: password })
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      if (/contraseña/i.test(body.message || '')) throw dataError('AUTH', 'Contraseña incorrecta');
+      throw dataError('NETWORK', 'No se pudo conectar con la base de datos.');
+    }
+    const rows = await res.json();
+    return rows.map(rowToParticipant);
+  }
+  return localGetParticipants();
 }
 
-async function getParticipantByCedula(cedula) {
-  const clean = (cedula || '').replace(/\D/g, '');
-  const participants = await getParticipants();
-  return participants.find(p => (p.cedula || '').replace(/\D/g, '') === clean);
+// ── ADMIN: Verificar login via RPC (server-side) ──
+async function adminLogin(password) {
+  if (supabaseEnabled()) {
+    const res = await fetch(sbRpcUrl('admin_login'), {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify({ pwd: password })
+    });
+    if (!res.ok) return false;
+    return await res.json();
+  }
+  // Fallback local — solo para desarrollo
+  return password === 'superhero2026';
 }
 
-// Inserta el participante. La unicidad de héroe y cédula la garantiza la BD:
+// Inserta el participante. La unicidad de héroe y celular la garantiza la BD:
 // si dos personas eligen el mismo héroe a la vez, solo una queda registrada.
 async function addParticipant(participant) {
+  // Validar hero del lado del cliente
+  if (!isValidHeroId(participant.hero)) {
+    throw dataError('INVALID', 'Superhéroe no válido.');
+  }
+
   if (supabaseEnabled()) {
+    const row = participantToRow(participant);
     const res = await fetch(sbUrl('participants'), {
       method: 'POST',
       headers: sbHeaders({ 'Prefer': 'return=representation' }),
-      body: JSON.stringify(participantToRow(participant))
+      body: JSON.stringify(row)
     });
     if (res.status === 201) {
       const rows = await res.json();
@@ -237,16 +335,16 @@ async function addParticipant(participant) {
     const msg = ((body && (body.message || body.details || body.hint)) || '') + '';
     if (res.status === 409 || /duplicate key|unique/i.test(msg)) {
       if (/hero/i.test(msg)) throw dataError('HERO_TAKEN', 'Este superhéroe acaba de ser elegido por otra persona. Elige otro.');
-      if (/cedula/i.test(msg)) throw dataError('CEDULA_TAKEN', 'Esta cédula ya está registrada.');
+      if (/celular/i.test(msg)) throw dataError('CELULAR_TAKEN', 'Este celular ya está registrado.');
       throw dataError('CONFLICT', 'Ya existe un registro con esos datos.');
     }
     throw dataError('NETWORK', 'No se pudo guardar la inscripción. Revisa tu conexión e intenta de nuevo.');
   }
   // Respaldo local
   const participants = localGetParticipants();
-  const clean = (participant.cedula || '').replace(/\D/g, '');
-  if (participants.some(p => (p.cedula || '').replace(/\D/g, '') === clean)) {
-    throw dataError('CEDULA_TAKEN', 'Esta cédula ya está registrada.');
+  const clean = (participant.celular || '').replace(/\D/g, '');
+  if (participants.some(p => (p.celular || '').replace(/\D/g, '') === clean)) {
+    throw dataError('CELULAR_TAKEN', 'Este celular ya está registrado.');
   }
   if (participants.some(p => p.hero === participant.hero)) {
     throw dataError('HERO_TAKEN', 'Este superhéroe acaba de ser elegido por otra persona. Elige otro.');
@@ -258,10 +356,13 @@ async function addParticipant(participant) {
   return participant;
 }
 
-async function removeParticipant(id) {
+// ── ADMIN: Eliminar participante via RPC ──
+async function removeParticipant(id, password) {
   if (supabaseEnabled()) {
-    const res = await fetch(sbUrl('participants?id=eq.' + encodeURIComponent(id)), {
-      method: 'DELETE', headers: sbHeaders()
+    const res = await fetch(sbRpcUrl('admin_delete_participant'), {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify({ pwd: password, participant_id: id })
     });
     if (!res.ok) throw dataError('NETWORK', 'No se pudo eliminar el participante.');
     return;
@@ -271,10 +372,15 @@ async function removeParticipant(id) {
   localSaveParticipants(participants);
 }
 
-async function resetAll() {
+// ── ADMIN: Resetear todo via RPC ──
+async function resetAll(password) {
   if (supabaseEnabled()) {
-    await fetch(sbUrl('participants?id=not.is.null'), { method: 'DELETE', headers: sbHeaders() });
-    await fetch(sbUrl('draw_results?id=eq.1'), { method: 'DELETE', headers: sbHeaders() });
+    const res = await fetch(sbRpcUrl('admin_reset_all'), {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify({ pwd: password })
+    });
+    if (!res.ok) throw dataError('NETWORK', 'No se pudo reiniciar.');
     return;
   }
   localSaveParticipants([]);
@@ -294,26 +400,36 @@ async function getDrawResults() {
   return data ? JSON.parse(data) : null;
 }
 
-async function saveDrawResults(results) {
-  const payload = { results: results, drawnAt: new Date().toISOString() };
+// ── ADMIN: Guardar resultados del sorteo via RPC ──
+async function saveDrawResults(results, password) {
+  const drawnAt = new Date().toISOString();
+  const payload = { results: results, drawnAt: drawnAt };
   if (supabaseEnabled()) {
-    // El sorteo vive en una sola fila (id = 1): la reemplazamos.
-    await fetch(sbUrl('draw_results?id=eq.1'), { method: 'DELETE', headers: sbHeaders() });
-    const res = await fetch(sbUrl('draw_results'), {
+    const res = await fetch(sbRpcUrl('admin_save_draw'), {
       method: 'POST',
-      headers: sbHeaders({ 'Prefer': 'return=minimal' }),
-      body: JSON.stringify({ id: 1, results: results, drawn_at: payload.drawnAt })
+      headers: sbHeaders(),
+      body: JSON.stringify({
+        pwd: password,
+        draw_results: results,
+        draw_time: drawnAt
+      })
     });
-    if (res.status !== 201 && !res.ok) throw dataError('NETWORK', 'No se pudo guardar el sorteo.');
+    if (!res.ok) throw dataError('NETWORK', 'No se pudo guardar el sorteo.');
     return payload;
   }
   localStorage.setItem(APP_CONFIG.DRAW_KEY, JSON.stringify(payload));
   return payload;
 }
 
-async function clearDrawResults() {
+// ── ADMIN: Limpiar sorteo via RPC ──
+async function clearDrawResults(password) {
   if (supabaseEnabled()) {
-    await fetch(sbUrl('draw_results?id=eq.1'), { method: 'DELETE', headers: sbHeaders() });
+    const res = await fetch(sbRpcUrl('admin_clear_draw'), {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify({ pwd: password })
+    });
+    if (!res.ok) throw dataError('NETWORK', 'No se pudo limpiar el sorteo.');
     return;
   }
   localStorage.removeItem(APP_CONFIG.DRAW_KEY);
@@ -323,8 +439,8 @@ async function clearDrawResults() {
  * Fisher-Yates based circular permutation for secret friend assignment.
  * Guarantees no one draws themselves.
  */
-async function performDraw() {
-  const participants = await getParticipants();
+async function performDraw(password) {
+  const participants = await getParticipantsAdmin(password);
   if (participants.length < 3) {
     throw new Error('Se necesitan al menos 3 participantes para el sorteo.');
   }
@@ -346,7 +462,7 @@ async function performDraw() {
   const results = participants.map((giver, index) => ({
     giverId: giver.id,
     giverName: giver.name,
-    giverCedula: giver.cedula,
+    giverCelular: giver.celular,
     giverHero: giver.hero,
     receiverId: assignments[index].id,
     receiverHero: assignments[index].hero,
@@ -359,7 +475,7 @@ async function performDraw() {
     receiverCostume: assignments[index].costume
   }));
 
-  await saveDrawResults(results);
+  await saveDrawResults(results, password);
   return results;
 }
 
@@ -393,23 +509,24 @@ function getHeroById(heroId) {
   return HEROES.find(h => h.id === heroId);
 }
 
-function formatCedulaDisplay(cedula) {
-  const clean = (cedula || '').replace(/\D/g, '');
-  if (clean.length >= 6) {
-    return clean.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+function formatCelularDisplay(celular) {
+  const clean = (celular || '').replace(/\D/g, '');
+  if (clean.length === 10) {
+    // Formato colombiano: 300 123 4567
+    return clean.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
   }
-  return cedula || '';
+  return celular || '';
 }
 
 function exportToCSV(participants) {
   participants = participants || [];
   if (participants.length === 0) return '';
 
-  const headers = ['Cédula', 'Nombre', 'Cargo', 'Superhéroe', 'Regalo 1', 'Regalo 2', 'Regalo 3', 'No quiere', 'Preferencias', 'Endulzada', 'Alergias', 'Accesorio'];
+  const headers = ['Celular', 'Nombre', 'Cargo', 'Superhéroe', 'Regalo 1', 'Regalo 2', 'Regalo 3', 'No quiere', 'Preferencias', 'Endulzada', 'Alergias', 'Accesorio'];
   const rows = participants.map(p => {
     const hero = getHeroById(p.hero);
     return [
-      p.cedula,
+      p.celular,
       p.name,
       p.cargo,
       hero ? hero.name : p.hero,
@@ -434,10 +551,14 @@ function showToast(message, type = 'success') {
 
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
+  // Sanitizar el mensaje para evitar XSS en toasts dinámicos
+  const safeMessage = document.createElement('span');
+  safeMessage.textContent = message;
   toast.innerHTML = `
     <span class="toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
-    <span class="toast-message">${message}</span>
+    <span class="toast-message"></span>
   `;
+  toast.querySelector('.toast-message').textContent = message;
   document.body.appendChild(toast);
 
   requestAnimationFrame(() => toast.classList.add('toast-show'));

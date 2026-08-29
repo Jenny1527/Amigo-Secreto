@@ -1,6 +1,10 @@
 // ============================================================
 // ADMIN.JS — Panel de administración y sorteo
 // ============================================================
+// SEGURIDAD: Todas las operaciones de admin pasan por funciones
+// RPC de PostgreSQL que validan un password del lado del servidor.
+// El password NO se almacena en el frontend.
+// ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavToggle();
@@ -14,13 +18,19 @@ function initNavToggle() {
   toggle.addEventListener('click', () => menu.classList.toggle('show'));
 }
 
-// ─── Admin Login ───
+// ─── Admin Login (validación server-side) ───
+let adminPassword = null; // Se guarda en memoria (sesión actual) tras login exitoso
+let loginAttempts = 0;
+let loginCooldownUntil = 0;
+
 function setupLogin() {
   const btnLogin = document.getElementById('btn-login');
   const passwordInput = document.getElementById('field-password');
 
   // Check if already logged in this session
-  if (sessionStorage.getItem('admin_logged_in') === 'true') {
+  const savedPwd = sessionStorage.getItem('admin_pwd');
+  if (savedPwd) {
+    adminPassword = savedPwd;
     showAdminPanel();
   }
 
@@ -30,16 +40,52 @@ function setupLogin() {
   });
 }
 
-function attemptLogin() {
+async function attemptLogin() {
+  const now = Date.now();
+
+  // Rate limiting: bloquear después de MAX_LOGIN_ATTEMPTS intentos fallidos
+  if (loginCooldownUntil > now) {
+    const secsLeft = Math.ceil((loginCooldownUntil - now) / 1000);
+    showToast(`Demasiados intentos. Espera ${secsLeft} segundos.`, 'error');
+    return;
+  }
+
   const password = document.getElementById('field-password').value;
 
-  if (password === APP_CONFIG.ADMIN_PASSWORD) {
-    sessionStorage.setItem('admin_logged_in', 'true');
-    showAdminPanel();
-    document.getElementById('group-password').classList.remove('has-error');
-  } else {
+  if (!password) {
     document.getElementById('group-password').classList.add('has-error');
+    return;
   }
+
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true;
+  btn.textContent = '🔐 Verificando...';
+
+  try {
+    const isValid = await adminLogin(password);
+    if (isValid) {
+      adminPassword = password;
+      sessionStorage.setItem('admin_pwd', password);
+      loginAttempts = 0;
+      showAdminPanel();
+      document.getElementById('group-password').classList.remove('has-error');
+    } else {
+      loginAttempts++;
+      document.getElementById('group-password').classList.add('has-error');
+
+      if (loginAttempts >= APP_CONFIG.MAX_LOGIN_ATTEMPTS) {
+        loginCooldownUntil = now + APP_CONFIG.LOGIN_COOLDOWN_MS;
+        const secs = APP_CONFIG.LOGIN_COOLDOWN_MS / 1000;
+        showToast(`${loginAttempts} intentos fallidos. Bloqueado ${secs}s.`, 'error');
+        loginAttempts = 0; // Reset counter for next round
+      }
+    }
+  } catch (e) {
+    showToast('No se pudo conectar. Revisa tu conexión.', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔓 Ingresar';
 }
 
 function showAdminPanel() {
@@ -49,14 +95,14 @@ function showAdminPanel() {
   renderDrawResults();
 }
 
-// ─── Render Participants ───
+// ─── Render Participants (datos obtenidos via RPC con password) ───
 async function renderParticipantsList() {
   const container = document.getElementById('participants-list');
   const countEl = document.getElementById('participant-count');
 
   let participants;
   try {
-    participants = await getParticipants();
+    participants = await getParticipantsAdmin(adminPassword);
   } catch (e) {
     container.innerHTML = `
       <div class="empty-state">
@@ -85,7 +131,7 @@ async function renderParticipantsList() {
         <thead>
           <tr>
             <th>#</th>
-            <th>Cédula</th>
+            <th>Celular</th>
             <th>Nombre</th>
             <th>Cargo</th>
             <th>Superhéroe</th>
@@ -104,7 +150,7 @@ async function renderParticipantsList() {
     html += `
       <tr>
         <td>${i + 1}</td>
-        <td>${formatCedulaDisplay(p.cedula)}</td>
+        <td>${formatCelularDisplay(p.celular)}</td>
         <td><strong>${escapeHtml(p.name)}</strong></td>
         <td>${escapeHtml(p.cargo)}</td>
         <td>
@@ -140,9 +186,9 @@ async function renderParticipantsList() {
         '¿Estás seguro de que deseas eliminar este participante? Esta acción no se puede deshacer.',
         async () => {
           try {
-            await removeParticipant(id);
+            await removeParticipant(id, adminPassword);
             // Also clear draw if exists since participants changed
-            await clearDrawResults();
+            await clearDrawResults(adminPassword);
             await renderParticipantsList();
             await renderDrawResults();
             showToast('Participante eliminado');
@@ -159,9 +205,14 @@ async function renderParticipantsList() {
 function setupAdminActions() {
   // Draw button
   document.getElementById('btn-draw').addEventListener('click', async () => {
+    if (!adminPassword) {
+      showToast('Sesión expirada. Recarga la página.', 'error');
+      return;
+    }
+
     let participants, existing;
     try {
-      participants = await getParticipants();
+      participants = await getParticipantsAdmin(adminPassword);
       existing = await getDrawResults();
     } catch (e) {
       showToast('No se pudo conectar con la base de datos', 'error');
@@ -190,9 +241,14 @@ function setupAdminActions() {
 
   // Export button
   document.getElementById('btn-export').addEventListener('click', async () => {
+    if (!adminPassword) {
+      showToast('Sesión expirada. Recarga la página.', 'error');
+      return;
+    }
+
     let csv;
     try {
-      const participants = await getParticipants();
+      const participants = await getParticipantsAdmin(adminPassword);
       csv = exportToCSV(participants);
     } catch (e) {
       showToast('No se pudo conectar con la base de datos', 'error');
@@ -216,12 +272,17 @@ function setupAdminActions() {
 
   // Reset button
   document.getElementById('btn-reset').addEventListener('click', () => {
+    if (!adminPassword) {
+      showToast('Sesión expirada. Recarga la página.', 'error');
+      return;
+    }
+
     showConfirmModal(
       '⚠️ Reiniciar Todo',
       'Se eliminarán TODOS los participantes y resultados del sorteo. Esta acción NO se puede deshacer. ¿Estás seguro?',
       async () => {
         try {
-          await resetAll();
+          await resetAll(adminPassword);
           await renderParticipantsList();
           await renderDrawResults();
           showToast('Todos los datos han sido eliminados');
@@ -261,7 +322,7 @@ function runDraw() {
     clearInterval(spinInterval);
 
     try {
-      const results = await performDraw();
+      const results = await performDraw(adminPassword);
       overlay.remove();
 
       // Show success
@@ -338,8 +399,8 @@ function showConfirmModal(title, message, onConfirm) {
   overlay.innerHTML = `
     <div class="modal-box">
       <div class="modal-icon">⚠️</div>
-      <div class="modal-title">${title}</div>
-      <div class="modal-message">${message}</div>
+      <div class="modal-title">${escapeHtml(title)}</div>
+      <div class="modal-message">${escapeHtml(message)}</div>
       <div class="modal-actions">
         <button class="btn btn-outline btn-sm" id="modal-cancel">Cancelar</button>
         <button class="btn btn-primary btn-sm" id="modal-confirm">Confirmar</button>

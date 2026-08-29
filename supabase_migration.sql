@@ -1,106 +1,62 @@
 -- ============================================================
--- AMIGO SECRETO — Configuración SEGURA de la base de datos
+-- AMIGO SECRETO — MIGRACIÓN desde versión anterior
 -- ============================================================
+-- Usa este script si YA tenías la base de datos con la versión
+-- anterior (con el campo "cedula" y políticas abiertas).
+-- Este script:
+--   1. Renombra la columna "cedula" a "celular"
+--   2. Reemplaza las políticas RLS abiertas por las nuevas restrictivas
+--   3. Crea las funciones RPC de admin
+--
 -- Cómo usar:
 --   1. Entra a tu proyecto en https://supabase.com
---   2. Menú izquierdo → SQL Editor → New query
+--   2. SQL Editor → New query
 --   3. Pega TODO este contenido y presiona "Run"
---
--- IMPORTANTE: Si ya tenías la versión anterior, usa
--- supabase_migration.sql en su lugar para no perder datos.
 -- ============================================================
 
 -- ──────────────────────────────────────────────────────────────
--- 1. TABLAS
+-- 1. RENOMBRAR COLUMNA cedula → celular
 -- ──────────────────────────────────────────────────────────────
-
--- Tabla de participantes
-create table if not exists public.participants (
-  id uuid primary key default gen_random_uuid(),
-  celular text not null unique,            -- número de celular (10 dígitos colombiano)
-  name text not null,
-  cargo text not null,
-  hero text not null unique,               -- impide que dos personas tengan el mismo héroe
-  gifts jsonb not null default '[]'::jsonb,
-  no_gift text default '',
-  preferences jsonb not null default '[]'::jsonb,
-  endulzada text not null,
-  endulzada_otros text default '',
-  alergias text default '',
-  costume boolean not null default false,
-  created_at timestamptz not null default now()
-);
-
--- Tabla del sorteo (una sola fila, id = 1)
-create table if not exists public.draw_results (
-  id int primary key,
-  results jsonb not null,
-  drawn_at timestamptz not null default now()
-);
+alter table public.participants rename column cedula to celular;
 
 -- ──────────────────────────────────────────────────────────────
--- 2. SEGURIDAD A NIVEL DE FILA (RLS) — ENDURECIDA
--- ──────────────────────────────────────────────────────────────
--- Principio: mínimo privilegio.
---   - anon solo puede INSERTAR participantes y LEER el sorteo.
---   - Todas las demás operaciones (listar participantes con datos
---     completos, eliminar, sortear, resetear) pasan por funciones
---     RPC que validan un password del lado del servidor.
+-- 2. REEMPLAZAR POLÍTICAS RLS (de abiertas a restrictivas)
 -- ──────────────────────────────────────────────────────────────
 
-alter table public.participants enable row level security;
-alter table public.draw_results enable row level security;
-
--- Limpiar políticas anteriores (por si existían las versiones previas)
+-- Eliminar políticas anteriores
 drop policy if exists "anon_participants_all" on public.participants;
-drop policy if exists "anon_participants_insert" on public.participants;
-drop policy if exists "anon_participants_count" on public.participants;
-drop policy if exists "anon_participants_select_hero" on public.participants;
 drop policy if exists "anon_draw_all" on public.draw_results;
+drop policy if exists "anon_participants_insert" on public.participants;
+drop policy if exists "anon_participants_select_hero" on public.participants;
+drop policy if exists "anon_participants_count" on public.participants;
 drop policy if exists "anon_draw_select" on public.draw_results;
 
--- ── Participants: anon solo puede INSERT ──
--- Permite que usuarios anónimos se inscriban.
--- La unicidad de celular y héroe la garantiza la BD (UNIQUE constraints).
+-- Nuevas políticas restrictivas
 create policy "anon_participants_insert" on public.participants
   for insert to anon
   with check (true);
 
--- Permite que anon lea SOLO el campo hero (para mostrar cuáles están tomados).
--- Los demás datos (celular, nombre, cargo, regalos, etc.) no se exponen.
 create policy "anon_participants_select_hero" on public.participants
   for select to anon
   using (true);
-  -- Nota: la columna se filtra via la query `?select=hero` desde el frontend.
-  -- RLS no puede filtrar columnas, pero la query solo pide las que necesita.
-  -- Para protección total de columnas, usamos la función RPC abajo.
 
--- ── Draw Results: anon solo puede SELECT ──
--- Permite consultar si hubo sorteo y buscar el resultado propio.
 create policy "anon_draw_select" on public.draw_results
   for select to anon
   using (true);
 
 -- ──────────────────────────────────────────────────────────────
--- 3. FUNCIONES RPC — OPERACIONES DE ADMIN PROTEGIDAS
--- ──────────────────────────────────────────────────────────────
--- Estas funciones se ejecutan como SECURITY DEFINER (con permisos
--- elevados). Validan un password antes de ejecutar la operación.
--- El password se almacena aquí como constante; cámbialo por algo seguro.
+-- 3. FUNCIONES RPC DE ADMIN (crear o reemplazar)
 -- ──────────────────────────────────────────────────────────────
 
--- ── Helper: validar password ──
 create or replace function admin_check_password(pwd text)
 returns boolean
 language plpgsql security definer
 as $$
 begin
-  -- Cambia este valor por tu password real de admin
   return pwd = 'superhero2026';
 end;
 $$;
 
--- ── Verificar login de admin (solo devuelve true/false) ──
 create or replace function admin_login(pwd text)
 returns boolean
 language plpgsql security definer
@@ -110,7 +66,6 @@ begin
 end;
 $$;
 
--- ── Listar todos los participantes (requiere password) ──
 create or replace function admin_list_participants(pwd text)
 returns setof public.participants
 language plpgsql security definer
@@ -123,7 +78,6 @@ begin
 end;
 $$;
 
--- ── Eliminar un participante por ID (requiere password) ──
 create or replace function admin_delete_participant(pwd text, participant_id uuid)
 returns void
 language plpgsql security definer
@@ -136,7 +90,6 @@ begin
 end;
 $$;
 
--- ── Guardar resultados del sorteo (requiere password) ──
 create or replace function admin_save_draw(pwd text, draw_results jsonb, draw_time timestamptz)
 returns void
 language plpgsql security definer
@@ -150,7 +103,6 @@ begin
 end;
 $$;
 
--- ── Limpiar el sorteo (requiere password) ──
 create or replace function admin_clear_draw(pwd text)
 returns void
 language plpgsql security definer
@@ -163,7 +115,6 @@ begin
 end;
 $$;
 
--- ── Resetear todo: participantes y sorteo (requiere password) ──
 create or replace function admin_reset_all(pwd text)
 returns void
 language plpgsql security definer
@@ -177,7 +128,6 @@ begin
 end;
 $$;
 
--- ── Contar participantes (público, sin datos sensibles) ──
 create or replace function public_participant_count()
 returns integer
 language plpgsql security definer
@@ -187,7 +137,6 @@ begin
 end;
 $$;
 
--- ── Listar solo héroes tomados (público, sin datos sensibles) ──
 create or replace function public_taken_heroes()
 returns jsonb
 language plpgsql security definer
@@ -198,7 +147,7 @@ end;
 $$;
 
 -- ──────────────────────────────────────────────────────────────
--- 4. PERMISOS: permitir que anon llame a las funciones RPC
+-- 4. PERMISOS PARA LAS FUNCIONES RPC
 -- ──────────────────────────────────────────────────────────────
 grant execute on function admin_login(text) to anon;
 grant execute on function admin_list_participants(text) to anon;

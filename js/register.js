@@ -24,7 +24,7 @@ async function refreshTakenHeroes() {
   if (!grid) return;
 
   taken.forEach(hid => {
-    const card = grid.querySelector(`.hero-card[data-hero-id="${hid}"]`);
+    const card = grid.querySelector(`.hero-card[data-hero-id="${CSS.escape(hid)}"]`);
     if (card && !card.classList.contains('hero-taken')) {
       card.classList.add('hero-taken');
       const hero = getHeroById(hid);
@@ -145,27 +145,27 @@ function setupFormSubmission() {
     document.getElementById('error-hero').style.display = 'none';
     document.getElementById('error-costume').style.display = 'none';
     document.getElementById('error-endulzada').style.display = 'none';
-    document.getElementById('error-cedula').textContent = 'Ingresa un número de cédula válido';
+    document.getElementById('error-celular').textContent = 'Ingresa un número de celular válido';
 
     let isValid = true;
 
-    // Validate cédula
-    const cedula = document.getElementById('field-cedula').value.trim();
-    const cleanCedula = cedula.replace(/\D/g, '');
-    if (!cleanCedula || cleanCedula.length < 5 || cleanCedula.length > 12) {
-      document.getElementById('group-cedula').classList.add('has-error');
+    // Validate celular
+    const celularRaw = document.getElementById('field-celular').value.trim();
+    const cleanCelular = validateCelular(celularRaw);
+    if (!cleanCelular || cleanCelular.length < 7 || cleanCelular.length > 15) {
+      document.getElementById('group-celular').classList.add('has-error');
       isValid = false;
     }
 
     // Validate name
-    const name = document.getElementById('field-name').value.trim();
-    if (!name) {
+    const name = sanitizeInput(document.getElementById('field-name').value);
+    if (!name || name.length < 2) {
       document.getElementById('group-name').classList.add('has-error');
       isValid = false;
     }
 
     // Validate cargo
-    const cargo = document.getElementById('field-cargo').value.trim();
+    const cargo = sanitizeInput(document.getElementById('field-cargo').value);
     if (!cargo) {
       document.getElementById('group-cargo').classList.add('has-error');
       isValid = false;
@@ -173,15 +173,15 @@ function setupFormSubmission() {
 
     // Validate hero selection (la unicidad definitiva la valida la base de datos al guardar)
     document.getElementById('error-hero').textContent = 'Debes seleccionar un superhéroe';
-    if (!selectedHero) {
+    if (!selectedHero || !isValidHeroId(selectedHero)) {
       document.getElementById('error-hero').style.display = 'block';
       isValid = false;
     }
 
     // Validate gifts
-    const gift1 = document.getElementById('field-gift1').value.trim();
-    const gift2 = document.getElementById('field-gift2').value.trim();
-    const gift3 = document.getElementById('field-gift3').value.trim();
+    const gift1 = sanitizeInput(document.getElementById('field-gift1').value);
+    const gift2 = sanitizeInput(document.getElementById('field-gift2').value);
+    const gift3 = sanitizeInput(document.getElementById('field-gift3').value);
     if (!gift1) { document.getElementById('group-gift1').classList.add('has-error'); isValid = false; }
     if (!gift2) { document.getElementById('group-gift2').classList.add('has-error'); isValid = false; }
     if (!gift3) { document.getElementById('group-gift3').classList.add('has-error'); isValid = false; }
@@ -194,7 +194,7 @@ function setupFormSubmission() {
     }
 
     // If "Otros" is chosen, the detail field is required
-    const endulzadaOtros = document.getElementById('field-endulzada-otros').value.trim();
+    const endulzadaOtros = sanitizeInput(document.getElementById('field-endulzada-otros').value);
     if (endulzadaRadio && endulzadaRadio.value === 'otros' && !endulzadaOtros) {
       document.getElementById('group-endulzada-otros').classList.add('has-error');
       isValid = false;
@@ -217,25 +217,27 @@ function setupFormSubmission() {
       return;
     }
 
-    // Collect preferences
-    const preferences = Array.from(document.querySelectorAll('input[name="preferences"]:checked')).map(cb => cb.value);
+    // Collect preferences (solo IDs válidos)
+    const preferences = Array.from(document.querySelectorAll('input[name="preferences"]:checked'))
+      .map(cb => cb.value)
+      .filter(id => PREFERENCE_OPTIONS.some(opt => opt.id === id));
 
     // Build participant object
     const participant = {
-      cedula: cleanCedula,
+      celular: cleanCelular,
       name: name,
       cargo: cargo,
       hero: selectedHero,
       gifts: [gift1, gift2, gift3],
-      noGift: document.getElementById('field-no-gift').value.trim(),
+      noGift: sanitizeInput(document.getElementById('field-no-gift').value),
       preferences: preferences,
       endulzada: endulzadaRadio.value,
       endulzadaOtros: endulzadaOtros,
-      alergias: document.getElementById('field-alergias').value.trim(),
+      alergias: sanitizeInput(document.getElementById('field-alergias').value),
       costume: costumeRadio.value === 'yes'
     };
 
-    // Save — la base de datos garantiza que el héroe y la cédula no se dupliquen,
+    // Save — la base de datos garantiza que el héroe y el celular no se dupliquen,
     // incluso si dos personas envían al mismo tiempo.
     const btn = document.getElementById('btn-submit');
     const originalText = btn.textContent;
@@ -259,12 +261,12 @@ function setupFormSubmission() {
         heroErr.style.display = 'block';
         heroErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
         showToast('Ese héroe ya fue elegido, escoge otro', 'error');
-      } else if (err.code === 'CEDULA_TAKEN') {
-        const g = document.getElementById('group-cedula');
+      } else if (err.code === 'CELULAR_TAKEN') {
+        const g = document.getElementById('group-celular');
         g.classList.add('has-error');
-        document.getElementById('error-cedula').textContent = 'Esta cédula ya está registrada';
+        document.getElementById('error-celular').textContent = 'Este celular ya está registrado';
         g.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        showToast('Esta cédula ya está registrada', 'error');
+        showToast('Este celular ya está registrado', 'error');
       } else {
         showToast(err.message || 'No se pudo guardar. Intenta de nuevo.', 'error');
       }

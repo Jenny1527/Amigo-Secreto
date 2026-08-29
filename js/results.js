@@ -15,25 +15,25 @@ function initNavToggle() {
 
 function setupSearch() {
   const btnSearch = document.getElementById('btn-search');
-  const cedulaInput = document.getElementById('field-search-cedula');
+  const celularInput = document.getElementById('field-search-celular');
 
   btnSearch.addEventListener('click', () => searchResult());
-  cedulaInput.addEventListener('keydown', (e) => {
+  celularInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') searchResult();
   });
 }
 
 async function searchResult() {
-  const cedula = document.getElementById('field-search-cedula').value.trim();
-  const cleanCedula = cedula.replace(/\D/g, '');
+  const celular = document.getElementById('field-search-celular').value.trim();
+  const cleanCelular = validateCelular(celular);
 
   // Clear errors
-  document.getElementById('group-search-cedula').classList.remove('has-error');
-  document.getElementById('error-search').textContent = 'No encontramos esa cédula. Verifica que sea la misma con la que te inscribiste.';
+  document.getElementById('group-search-celular').classList.remove('has-error');
+  document.getElementById('error-search').textContent = 'No encontramos ese celular. Verifica que sea el mismo con el que te inscribiste.';
 
-  if (!cleanCedula || cleanCedula.length < 5) {
-    document.getElementById('group-search-cedula').classList.add('has-error');
-    document.getElementById('error-search').textContent = 'Ingresa un número de cédula válido';
+  if (!cleanCelular || cleanCelular.length < 7) {
+    document.getElementById('group-search-celular').classList.add('has-error');
+    document.getElementById('error-search').textContent = 'Ingresa un número de celular válido';
     return;
   }
 
@@ -61,11 +61,13 @@ async function searchResult() {
     return;
   }
 
-  // Find assignment for this cedula
-  const assignment = drawData.results.find(r => r.giverCedula.replace(/\D/g, '') === cleanCedula);
+  // Find assignment for this celular
+  const assignment = drawData.results.find(r =>
+    (r.giverCelular || '').replace(/\D/g, '') === cleanCelular
+  );
 
   if (!assignment) {
-    document.getElementById('group-search-cedula').classList.add('has-error');
+    document.getElementById('group-search-celular').classList.add('has-error');
     return;
   }
 
@@ -129,7 +131,7 @@ function showResult(assignment) {
           <div class="result-section">
             <div class="result-section-title">🍫 Preferencias</div>
             <div class="result-tags">
-              ${prefLabels.map(label => `<span class="result-tag">${label}</span>`).join('')}
+              ${prefLabels.map(label => `<span class="result-tag">${escapeHtml(label)}</span>`).join('')}
             </div>
           </div>
           ` : ''}

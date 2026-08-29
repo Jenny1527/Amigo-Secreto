@@ -88,7 +88,7 @@
         <a href="results.html" class="action-card" id="card-results">
           <span class="action-card-icon">🔍</span>
           <h2 class="action-card-title">CONSULTA TU RESULTADO</h2>
-          <p class="action-card-desc">Después del sorteo, ingresa tu número de cédula para ver las pistas de tu amigo secreto.</p>
+          <p class="action-card-desc">Después del sorteo, ingresa tu número de celular para ver las pistas de tu amigo secreto.</p>
         </a>
         <a href="admin.html" class="action-card" id="card-admin">
           <span class="action-card-icon">🎯</span>
@@ -112,7 +112,7 @@
             <span style="font-size: 1.5rem; line-height: 1;">1️⃣</span>
             <div>
               <strong style="color: var(--comic-gold);">Inscríbete</strong>
-              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Ingresa tu cédula, nombre y cargo, escoge tu superhéroe, registra 3 opciones de regalo y elige si prefieres <strong>dulce o salado</strong> para las endulzadas. El regalo <strong>no tiene que ser de la temática</strong>.</p>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Ingresa tu celular, nombre y cargo, escoge tu superhéroe, registra 3 opciones de regalo y elige si prefieres <strong>dulce o salado</strong> para las endulzadas. El regalo <strong>no tiene que ser de la temática</strong>.</p>
             </div>
           </div>
           <div style="display: flex; align-items: flex-start; gap: 1rem;">
@@ -126,7 +126,7 @@
             <span style="font-size: 1.5rem; line-height: 1;">3️⃣</span>
             <div>
               <strong style="color: var(--comic-gold);">Consulta tu resultado</strong>
-              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Ingresa tu <strong>número de cédula</strong> y verás el superhéroe y las pistas de regalo de tu amigo secreto.</p>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Ingresa tu <strong>número de celular</strong> y verás el superhéroe y las pistas de regalo de tu amigo secreto.</p>
             </div>
           </div>
           <div style="display: flex; align-items: flex-start; gap: 1rem;">
@@ -156,7 +156,7 @@
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
   <script>
-    // Update stats
+    // Update stats — usa funciones públicas que no exponen datos personales
     document.addEventListener('DOMContentLoaded', async () => {
       // Mobile nav toggle
       const toggle = document.getElementById('nav-toggle');
@@ -166,11 +166,11 @@
       });
 
       try {
-        const participants = await getParticipants();
-        const takenHeroes = participants.map(p => p.hero);
+        const count = await getParticipantCount();
+        const takenHeroes = await getTakenHeroes();
         const drawResults = await getDrawResults();
 
-        document.getElementById('stat-participants').textContent = participants.length;
+        document.getElementById('stat-participants').textContent = count;
         document.getElementById('stat-heroes').textContent = HEROES.length - takenHeroes.length;
         document.getElementById('stat-drawn').textContent = drawResults ? '✅' : '❌';
       } catch (e) {
