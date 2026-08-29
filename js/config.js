@@ -20,4 +20,4 @@ window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 // archivo y recarga la página. Para volver a ocultarlo, ponla en
 // false de nuevo. (El control vive aquí, no en el HTML.)
 // ============================================================
-window.ADMIN_ENABLED = true;
+window.ADMIN_ENABLED = false;
